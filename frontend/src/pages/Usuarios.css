@@ -1,0 +1,67 @@
+/* --- Estilos de Tabla (Reutilizados) --- */
+.table-container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+table th {
+    background-color: #f9f9f9;
+    font-size: 12px;
+    color: #555;
+    text-transform: uppercase;
+}
+
+table tbody tr:hover {
+    background-color: #f7f7f7;
+}
+
+/* --- Botón Crear --- */
+.create-button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    background-color: #F57F17; /* Naranja Coyahue */
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 12px;
+    transition: background-color 0.3s ease;
+}
+
+.create-button:hover {
+    background-color: #E67E22;
+}
+
+
+/* --- NUEVO: Estilos para las Etiquetas de Estado --- */
+.estado-tag {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.estado-tag.activo {
+    background-color: #E8F5E9; /* Verde claro */
+    color: #2E7D32; /* Verde oscuro */
+}
+
+.estado-tag.suspendido {
+    background-color: #FFEBEE; /* Rojo claro */
+    color: #C62828; /* Rojo oscuro */
+}

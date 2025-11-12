@@ -1,0 +1,20 @@
+.calendario-page {
+    padding: 20px;
+}
+
+.calendario-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-top: 20px;
+}
+
+/* Ajustes para que se vea mejor */
+.rbc-calendar {
+    font-family: Arial, sans-serif;
+}
+
+.rbc-event {
+    background-color: #F57F17; /* Naranja Coyahue */
+}

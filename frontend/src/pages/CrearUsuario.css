@@ -1,0 +1,124 @@
+/* --- Contenedor Principal del Formulario --- */
+.edit-form-container {
+    max-width: 900px; /* Un poco más ancho para acomodar las dos columnas */
+    margin: 0 auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.edit-form-container h1 {
+    font-size: 24px;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 12px;
+}
+
+/* --- Grid de Dos Columnas --- */
+.perfil-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Divide el espacio en dos partes iguales */
+    gap: 24px; /* Espacio entre columnas */
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Espacio vertical entre inputs */
+}
+
+/* --- Estilos de Inputs y Labels --- */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 6px;
+}
+
+.form-group input {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #333;
+    transition: border-color 0.2s;
+    background-color: #fafafa;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #F57F17; /* Naranja al enfocar */
+    background-color: #fff;
+    box-shadow: 0 0 0 2px rgba(245, 127, 23, 0.1);
+}
+
+/* --- Sección de Checkboxes (Roles y Estado) --- */
+.form-group-checkboxes {
+    display: flex;
+    gap: 30px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #F57F17; /* Color del check nativo */
+}
+
+.checkbox-wrapper label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    user-select: none; /* Evita seleccionar el texto al hacer clic */
+}
+
+/* --- Botón de Crear --- */
+.save-button {
+    width: 100%;
+    margin-top: 30px;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background-color: #F57F17; /* Naranja Coyahue */
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.save-button:hover {
+    background-color: #E67E22; /* Un tono más oscuro al pasar el mouse */
+}
+
+/* --- Responsivo para Móviles --- */
+@media (max-width: 768px) {
+    .perfil-form-grid {
+        grid-template-columns: 1fr; /* Una sola columna en pantallas pequeñas */
+        gap: 16px;
+    }
+
+    .form-group-checkboxes {
+        flex-direction: column;
+        gap: 12px;
+    }
+}

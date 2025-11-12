@@ -1,0 +1,102 @@
+/* --- Contenedor Principal --- */
+.perfil-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* --- Tarjeta Superior (Foto + Ocupación) --- */
+.perfil-header-card {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background-color: #ffffff;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 24px;
+}
+
+.perfil-foto img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f0f0f0;
+}
+
+.perfil-info-principal label {
+    font-size: 14px;
+    color: #555;
+    font-weight: 500;
+}
+
+.perfil-info-principal p {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin: 4px 0 0 0;
+}
+
+/* --- Tarjeta Inferior (Detalles) --- */
+.perfil-details-card {
+    background-color: #ffffff;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.perfil-details-card h3 {
+    font-size: 20px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* --- Grid para el formulario --- */
+.perfil-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas de igual tamaño */
+    gap: 20px;
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Espacio entre campos del formulario */
+}
+
+/* --- Campos de solo lectura --- */
+.form-group-readonly {
+    margin-bottom: 0; /* El 'gap' del grid ya nos da espacio */
+}
+
+.form-group-readonly label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group-readonly input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color: #f4f7f6; /* Color de fondo para deshabilitado */
+    cursor: not-allowed;
+    color: #555; /* Color de texto para deshabilitado */
+}
+
+/* --- Responsivo para Móvil --- */
+@media (max-width: 768px) {
+    .perfil-header-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .perfil-form-grid {
+        grid-template-columns: 1fr; /* Una sola columna en móvil */
+    }
+}
