@@ -1,53 +1,77 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import axios from 'axios'; // 1. Importa axios
+import axios from 'axios'; 
 import '../pages/Menu.css'; 
-const logoCoyahue = '/public/.png'; 
-// 2. Importa un avatar por defecto
-const defaultAvatar = '/assets/avataradmin.jpg'; // Asume que pondrás una imagen en 'public/assets/'
 
-// --- Componente de la Barra Lateral ---
-// 3. Ahora acepta 'user' como prop
+// 1. AÑADIMOS ArrowLeftCircle A LOS IMPORTS
+import { 
+    HouseDoor, 
+    Speedometer2, 
+    Calendar3, 
+    People, 
+    BoxSeam, 
+    PersonCircle, 
+    JournalText,
+    ArrowLeftCircle // <-- NUEVO
+} from 'react-bootstrap-icons';
+
+const logoCoyahue = '/logo-coyahue.png'; 
+const defaultAvatar = '/assets/default-avatar.png'; 
+
 const Sidebar = ({ user }) => {
     const navigate = useNavigate();
+    const handleLogout = () => { localStorage.removeItem('authToken'); navigate('/login'); };
 
-    const handleLogout = () => {
-        localStorage.removeItem('authToken');
-        navigate('/login');
-    };
-
-    // 4. Determina el nombre y la foto a mostrar
     const displayName = user ? `${user.nombres} ${user.apellidos}` : 'Cargando...';
-    const displayPicture = user?.perfil?.foto_url || defaultAvatar;
+    
+    let displayPicture = defaultAvatar;
+    if (user?.perfil?.foto) {
+        displayPicture = user.perfil.foto.startsWith('http') 
+            ? user.perfil.foto 
+            : `http://127.0.0.1:8000${user.perfil.foto}`;
+    }
+
+    const esAdmin = user?.es_admin === true;
+
+    // (Nota: Idealmente, deberíamos mover este 'iconStyle' a CSS también en una refactorización futura, 
+    // pero por ahora nos centramos en el Logout)
+    const iconStyle = { marginRight: '10px', fontSize: '18px', marginTop: '-2px' };
 
     return (
         <div className="sidebar-container">
             <div className="sidebar-logo">
                 <img src={logoCoyahue} alt="Grupo Coyahue" style={{ width: '150px' }}/>
             </div>
-            
-            {/* --- SECCIÓN DE PERFIL ACTUALIZADA --- */}
             <div className="sidebar-profile">
-                {/* 5. Muestra la imagen de perfil */}
                 <img src={displayPicture} alt="Perfil" className="profile-avatar-img" />
-                {/* 6. Muestra el nombre real */}
-                <span className="profile-name">{displayName}</span>
+                <div>
+                    <span className="profile-name">{displayName}</span>
+                    <div style={{fontSize: '11px', color: '#777', marginTop: '2px'}}>
+                        {esAdmin ? 'Administrador' : 'Equipo TI'}
+                    </div>
+                </div>
             </div>
-            {/* --- FIN SECCIÓN ACTUALIZADA --- */}
-
             <nav className="sidebar-nav">
                 <ul>
-                    <li><NavLink to="/menu">Menu</NavLink></li>
-                    <li><NavLink to="/dashboard">Dashboard</NavLink></li>
-                    <li><NavLink to="/calendario">Calendario</NavLink></li>
-                    <li><NavLink to="/usuarios">Usuarios</NavLink></li>
-                    <li><NavLink to="/inventario">Inventario</NavLink></li>
-                    <li><NavLink to="/perfil">Perfil</NavLink></li>
+                    <li><NavLink to="/menu"><HouseDoor style={iconStyle} /> Menú</NavLink></li>
+                    <li><NavLink to="/dashboard"><Speedometer2 style={iconStyle} /> Dashboard</NavLink></li>
+                    <li><NavLink to="/calendario"><Calendar3 style={iconStyle} /> Calendario</NavLink></li>
+                    
+                    {esAdmin && (
+                        <>
+                            <li><NavLink to="/usuarios"><People style={iconStyle} /> Gestión Usuarios</NavLink></li>
+                            <li><NavLink to="/auditoria"><JournalText style={iconStyle} /> Auditoría</NavLink></li>
+                        </>
+                    )}
+
+                    <li><NavLink to="/inventario"><BoxSeam style={iconStyle} /> Inventario</NavLink></li>
+                    <li><NavLink to="/perfil"><PersonCircle style={iconStyle} /> Mi Perfil</NavLink></li>
                 </ul>
                 
                 <div className="sidebar-logout">
                     <button onClick={handleLogout} className="logout-btn">
-                        Cerrar Sesión
+                        {/* 2. USAMOS EL NUEVO ICONO CON CLASE CSS */}
+                        <ArrowLeftCircle className="logout-icon" /> Cerrar Sesión
                     </button>
                 </div>
             </nav>
@@ -55,46 +79,33 @@ const Sidebar = ({ user }) => {
     );
 }
 
-// --- El Layout Principal ---
 export const AppLayout = () => {
-  // 7. Estado para guardar los datos del usuario
   const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
 
-  // 8. useEffect para cargar los datos del usuario UNA VEZ
   useEffect(() => {
     const fetchUserProfile = async () => {
       const token = localStorage.getItem('authToken');
-      if (!token) {
-        navigate('/login'); // Si no hay token, no deberíamos estar aquí
-        return;
-      }
-      
+      if (!token) { navigate('/login'); return; }
       try {
         const response = await axios.get('http://127.0.0.1:8000/api/perfil/', {
           headers: { 'Authorization': `Token ${token}` }
         });
-        setUserData(response.data); // Guarda los datos del usuario
+        setUserData(response.data); 
       } catch (error) {
-        console.error("Error al cargar datos de usuario para el layout:", error);
-        // Si el token es inválido, podría redirigir al login
         if (error.response && error.response.status === 401) {
             localStorage.removeItem('authToken');
             navigate('/login');
         }
       }
     };
-
     fetchUserProfile();
-  }, [navigate]); // Se ejecuta solo una vez
+  }, [navigate]);
 
   return (
     <div className="app-layout">
-        {/* 9. Pasa los datos del usuario al Sidebar */}
         <Sidebar user={userData} />
-        <main className="main-content">
-            <Outlet /> 
-        </main>
+        <main className="main-content"><Outlet /></main>
     </div>
   );
 };

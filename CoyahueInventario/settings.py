@@ -153,13 +153,14 @@ CORS_ALLOW_METHODS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # Le dice a Django que el método de autenticación para la API es por Token
         'rest_framework.authentication.TokenAuthentication', 
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        # Exige que el usuario esté autenticado (con un token) para todas las vistas
         'rest_framework.permissions.IsAuthenticated', 
-    ]
+    ],
+    # --- NUEVA CONFIGURACIÓN DE PAGINACIÓN ---
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 15, # <-- Aquí definimos el límite de 15 por página
 }
 
 

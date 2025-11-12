@@ -1,113 +1,78 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './EquipoEdit.css'; 
+import './EquipoEdit.css';
 
-export const EquipoEdit = () => {
-    const { id } = useParams(); 
+export const EquipoCrear = () => {
     const navigate = useNavigate();
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(true);
-
-    // Listas para los selectores
+    
     const [tipos, setTipos] = useState([]);
     const [estados, setEstados] = useState([]);
     const [proveedores, setProveedores] = useState([]);
     const [usuarios, setUsuarios] = useState([]);
 
     const [formData, setFormData] = useState({
-        nro_serie: '', 
-        marca: '', 
-        modelo: '', 
-        fecha_compra: '',
-        // Specs
-        procesador: '', 
-        ram: '', 
-        almacenamiento: '',
-        // Relaciones (IDs para los selects)
-        tipo_id: '', 
-        estado_id: '', 
-        proveedor_id: '', 
-        usuario_id: '', 
-        rut_asociado: '',
-        factura: null // Para subir nueva factura
+        nro_serie: '', marca: '', modelo: '', fecha_compra: '',
+        procesador: '', ram: '', almacenamiento: '',
+        tipo_id: '', estado_id: '', proveedor_id: '', usuario_id: '', rut_asociado: '',
+        factura: null
     });
 
-    // Función auxiliar para datos paginados
-    const getData = (res) => res.data.results || res.data;
+    // --- FUNCIÓN AUXILIAR PARA EXTRAER DATOS ---
+    // Si la respuesta tiene paginación (.results), devuelve eso. Si no, devuelve la data directa.
+    const getData = (response) => {
+        if (response.data && response.data.results) {
+            return response.data.results;
+        }
+        return response.data;
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchOpciones = async () => {
             const token = localStorage.getItem('authToken');
             try {
-                // 1. Cargar listas y el equipo en paralelo
-                const [resTipos, resEstados, resProv, resUsers, resEquipo] = await Promise.all([
+                const [resTipos, resEstados, resProv, resUsers] = await Promise.all([
                     axios.get('http://127.0.0.1:8000/api/tipos-equipo/', { headers: { 'Authorization': `Token ${token}` } }),
                     axios.get('http://127.0.0.1:8000/api/estados/', { headers: { 'Authorization': `Token ${token}` } }),
                     axios.get('http://127.0.0.1:8000/api/proveedores/', { headers: { 'Authorization': `Token ${token}` } }),
-                    axios.get('http://127.0.0.1:8000/api/usuarios/', { headers: { 'Authorization': `Token ${token}` } }),
-                    axios.get(`http://127.0.0.1:8000/api/equipos/${id}/`, { headers: { 'Authorization': `Token ${token}` } })
+                    axios.get('http://127.0.0.1:8000/api/usuarios/', { headers: { 'Authorization': `Token ${token}` } })
                 ]);
 
+                // Usamos la función auxiliar aquí para evitar el crash
                 setTipos(getData(resTipos));
                 setEstados(getData(resEstados));
                 setProveedores(getData(resProv));
                 setUsuarios(getData(resUsers));
 
-                const data = resEquipo.data;
-
-                // 2. Rellenar el formulario con los datos existentes
-                // Usamos ?.id || '' para evitar el crash si es null
-                setFormData({
-                    nro_serie: data.nro_serie || '',
-                    marca: data.marca || '',
-                    modelo: data.modelo || '',
-                    fecha_compra: data.fecha_compra || '',
-                    
-                    procesador: data.procesador || '',
-                    ram: data.ram || '',
-                    almacenamiento: data.almacenamiento || '',
-                    
-                    // Mapeamos los objetos a sus IDs para los <select>
-                    tipo_id: data.id_tipo_equipo?.id || '',
-                    estado_id: data.id_estado?.id || '',
-                    proveedor_id: data.id_proveedor?.id || '',
-                    usuario_id: data.id_usuario_responsable?.id || '',
-                    
-                    rut_asociado: data.rut_asociado || '',
-                    factura: null // No cargamos el archivo binario, solo placeholder
-                });
-
-                setLoading(false);
-            } catch (err) {
-                console.error("Error cargando datos", err);
-                setError('Error al cargar los datos del equipo.');
-                setLoading(false);
+            } catch (err) { 
+                console.error(err); 
+                setError("Error al cargar las opciones. Verifica tu conexión."); 
             }
         };
-        fetchData();
-    }, [id]); 
+        fetchOpciones();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value, files } = e.target;
-
+        
         if (name === 'usuario_id') {
-            // Lógica automática de RUT
             const usuario = usuarios.find(u => u.id === parseInt(value));
             setFormData(prev => ({
-                ...prev,
-                usuario_id: value,
+                ...prev, 
+                usuario_id: value, 
                 rut_asociado: usuario?.perfil?.rut || ''
             }));
         } else if (name === 'factura') {
-            // Lógica de archivo PDF
             const file = files[0];
-            if (file && file.type !== 'application/pdf') {
-                alert('Solo se permiten archivos PDF.');
-                e.target.value = null;
-                return;
+            if (file) {
+                if (file.type !== 'application/pdf') {
+                    alert('Solo se permiten archivos PDF.');
+                    e.target.value = null;
+                    return;
+                }
+                setFormData(prev => ({ ...prev, factura: file }));
             }
-            setFormData(prev => ({ ...prev, factura: file }));
         } else {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
@@ -117,57 +82,50 @@ export const EquipoEdit = () => {
         e.preventDefault();
         const token = localStorage.getItem('authToken');
         
-        // Usamos FormData para soportar archivos
         const dataToSend = new FormData();
-        
         Object.keys(formData).forEach(key => {
-            // Filtramos nulos o vacíos excepto si queremos borrar (lógica compleja, simplifiquemos)
-            // Solo enviamos si tiene valor. Si es factura y es null, no se envía (mantiene la anterior)
             if (formData[key] !== null && formData[key] !== '') {
                 dataToSend.append(key, formData[key]);
             }
         });
 
         try {
-            await axios.patch(`http://127.0.0.1:8000/api/equipos/${id}/`, dataToSend, {
+            await axios.post('http://127.0.0.1:8000/api/equipos/', dataToSend, {
                 headers: { 
                     'Authorization': `Token ${token}`,
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': 'multipart/form-data' 
                 }
             });
             navigate('/inventario');
         } catch (err) {
-            console.error("Error al guardar:", err.response?.data);
-            setError("Error al actualizar el equipo. Revisa los datos.");
+            console.error("Error creando equipo", err.response?.data);
+            setError("Error al crear equipo. Verifica los datos.");
         }
     };
 
-    if (loading) return <p className="loading-msg">Cargando equipo...</p>;
-
     return (
         <div className="edit-form-container">
-            <h1>Editar Equipo (ID: {id})</h1>
+            <h1>Registrar Nuevo Equipo</h1>
             {error && <p style={{ color: 'red' }}>{error}</p>}
-            
+
             <form onSubmit={handleSubmit}>
                 <div className="perfil-form-grid">
-                    {/* Columna 1 */}
                     <div className="form-column">
                         <div className="form-group">
-                            <label>Número de Serie</label>
+                            <label>Número de Serie *</label>
                             <input type="text" name="nro_serie" value={formData.nro_serie} onChange={handleChange} required />
                         </div>
                         <div className="form-group">
-                            <label>Marca</label>
+                            <label>Marca *</label>
                             <input type="text" name="marca" value={formData.marca} onChange={handleChange} required />
                         </div>
                         <div className="form-group">
                             <label>Procesador</label>
-                            <input type="text" name="procesador" value={formData.procesador} onChange={handleChange} />
+                            <input type="text" name="procesador" placeholder="Ej: Intel i7" value={formData.procesador} onChange={handleChange} />
                         </div>
                         <div className="form-group">
                             <label>Almacenamiento</label>
-                            <input type="text" name="almacenamiento" value={formData.almacenamiento} onChange={handleChange} />
+                            <input type="text" name="almacenamiento" placeholder="Ej: 512GB SSD" value={formData.almacenamiento} onChange={handleChange} />
                         </div>
                         <div className="form-group">
                             <label>Fecha de Compra</label>
@@ -175,48 +133,41 @@ export const EquipoEdit = () => {
                         </div>
                     </div>
 
-                    {/* Columna 2 */}
                     <div className="form-column">
                         <div className="form-group">
-                            <label>Modelo</label>
+                            <label>Modelo *</label>
                             <input type="text" name="modelo" value={formData.modelo} onChange={handleChange} required />
                         </div>
-                        
-                        {/* Selects cargados dinámicamente */}
                         <div className="form-group">
-                            <label>Tipo de Equipo</label>
+                            <label>Tipo de Equipo *</label>
                             <select name="tipo_id" value={formData.tipo_id} onChange={handleChange} required style={{width:'100%', padding:'10px'}}>
-                                <option value="">-- Seleccionar --</option>
+                                <option value="">-- Seleccionar Tipo --</option>
                                 {tipos.map(t => <option key={t.id} value={t.id}>{t.nombre_tipo}</option>)}
                             </select>
                         </div>
-
                         <div className="form-group">
                             <label>Memoria RAM</label>
-                            <input type="text" name="ram" value={formData.ram} onChange={handleChange} />
+                            <input type="text" name="ram" placeholder="Ej: 16GB" value={formData.ram} onChange={handleChange} />
                         </div>
-
                         <div className="form-group">
-                            <label>Estado</label>
+                            <label>Estado *</label>
                             <select name="estado_id" value={formData.estado_id} onChange={handleChange} required style={{width:'100%', padding:'10px'}}>
-                                <option value="">-- Seleccionar --</option>
+                                <option value="">-- Seleccionar Estado --</option>
                                 {estados.map(e => <option key={e.id} value={e.id}>{e.nombre_estado}</option>)}
                             </select>
                         </div>
-
                         <div className="form-group">
                             <label>Proveedor</label>
                             <select name="proveedor_id" value={formData.proveedor_id} onChange={handleChange} style={{width:'100%', padding:'10px'}}>
-                                <option value="">-- Seleccionar --</option>
+                                <option value="">-- Seleccionar Proveedor --</option>
                                 {proveedores.map(p => <option key={p.id} value={p.id}>{p.nombre_proveedor}</option>)}
                             </select>
                         </div>
                     </div>
                 </div>
-
-                {/* Actualizar Factura */}
+                
                 <div className="form-group" style={{marginTop: '15px'}}>
-                    <label>Actualizar Factura (PDF) - <small>Dejar vacío para mantener la actual</small></label>
+                    <label>Adjuntar Factura (Solo PDF)</label>
                     <input 
                         type="file" 
                         name="factura" 
@@ -227,8 +178,8 @@ export const EquipoEdit = () => {
                 </div>
 
                 <hr style={{margin: '20px 0', border: '0', borderTop: '1px solid #eee'}}/>
-
-                {/* Asignación */}
+                
+                <h3>Asignación Inicial (Opcional)</h3>
                 <div className="perfil-form-grid">
                     <div className="form-column">
                         <div className="form-group">
@@ -243,13 +194,13 @@ export const EquipoEdit = () => {
                     </div>
                     <div className="form-column">
                         <div className="form-group">
-                            <label>RUT Asociado</label>
+                            <label>RUT Asociado (Automático)</label>
                             <input type="text" value={formData.rut_asociado} readOnly disabled style={{backgroundColor: '#f0f0f0'}} />
                         </div>
                     </div>
                 </div>
-                
-                <button type="submit" className="save-button">Guardar Cambios</button>
+
+                <button type="submit" className="save-button">Registrar Equipo</button>
             </form>
         </div>
     );

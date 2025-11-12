@@ -1,30 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import './CrearUsuario.css'; // Reutilizamos el mismo CSS
+import './CrearUsuario.css'; 
 
 export const EditarUsuario = () => {
-    const { id } = useParams(); // Obtenemos el ID de la URL
+    const { id } = useParams(); 
     const navigate = useNavigate();
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
     
     const [formData, setFormData] = useState({
-        username: '',      
-        email: '',         
-        password: '',      // Se dejará vacío si no se quiere cambiar
-        nombres: '',       
-        apellidos: '',     
-        rol: false,        
-        estado: true,      
-        perfil: {
-            rut: '',
-            area: '',
-            ocupacion: ''
-        }
+        username: '', email: '', password: '', nombres: '', apellidos: '',
+        rol: false, estado: true,
+        rut: '', area: '', ocupacion: '', foto: null
     });
 
-    // 1. Cargar datos del usuario al iniciar
+    // --- FUNCIÓN FORMATEADORA DE RUT (AÑADIDA) ---
+    const formatRut = (rut) => {
+        // Eliminar todo lo que no sea número o K
+        let value = rut.replace(/[^0-9kK]/g, '');
+        if (value.length <= 1) return value;
+
+        const cuerpo = value.slice(0, -1);
+        const dv = value.slice(-1).toUpperCase();
+
+        const cuerpoFormateado = cuerpo.split('').reverse().reduce((acc, char, i) => {
+            return char + (i > 0 && i % 3 === 0 ? '.' : '') + acc;
+        }, '');
+
+        return `${cuerpoFormateado}-${dv}`;
+    };
+
     useEffect(() => {
         const fetchUsuario = async () => {
             const token = localStorage.getItem('authToken');
@@ -32,29 +38,24 @@ export const EditarUsuario = () => {
                 const response = await axios.get(`http://127.0.0.1:8000/api/usuarios/${id}/`, {
                     headers: { 'Authorization': `Token ${token}` }
                 });
-                
                 const data = response.data;
-                
-                // Rellenamos el formulario con los datos recibidos
                 setFormData({
                     username: data.username,
                     email: data.email,
-                    password: '', // La contraseña no viene del servidor por seguridad
+                    password: '',
                     nombres: data.nombres,
                     apellidos: data.apellidos,
                     rol: data.rol,
                     estado: data.estado,
-                    perfil: {
-                        rut: data.perfil?.rut || '',
-                        area: data.perfil?.area || '',
-                        ocupacion: data.perfil?.ocupacion || ''
-                    }
+                    rut: data.perfil?.rut || '',
+                    area: data.perfil?.area || '',
+                    ocupacion: data.perfil?.ocupacion || '',
+                    foto: null 
                 });
                 setLoading(false);
-
             } catch (err) {
-                console.error("Error cargando usuario:", err);
-                setError('No se pudieron cargar los datos del usuario.');
+                console.error(err);
+                setError('No se pudieron cargar los datos.');
                 setLoading(false);
             }
         };
@@ -62,28 +63,17 @@ export const EditarUsuario = () => {
     }, [id]);
 
     const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
+        const { name, value, type, checked, files } = e.target;
         
-        if (name === 'rut' || name === 'area' || name === 'ocupacion') {
-            setFormData(prevData => ({
-                ...prevData,
-                perfil: {
-                    ...prevData.perfil,
-                    [name]: value
-                }
-            }));
-        }
-        else if (type === 'checkbox') {
-            setFormData(prevData => ({
-                ...prevData,
-                [name]: checked
-            }));
-        } 
-        else {
-            setFormData(prevData => ({
-                ...prevData,
-                [name]: value
-            }));
+        if (type === 'checkbox') {
+            setFormData(prev => ({ ...prev, [name]: checked }));
+        } else if (type === 'file') {
+            setFormData(prev => ({ ...prev, [name]: files[0] }));
+        } else if (name === 'rut') {
+            // --- APLICAR FORMATO AL RUT AQUÍ TAMBIÉN ---
+            setFormData(prev => ({ ...prev, [name]: formatRut(value) }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
         }
     };
 
@@ -92,102 +82,66 @@ export const EditarUsuario = () => {
         setError(''); 
         const token = localStorage.getItem('authToken');
 
-        // Preparamos los datos para enviar
-        const dataToSend = { ...formData };
+        const dataToSend = new FormData();
+        Object.keys(formData).forEach(key => {
+            if (key === 'password' && formData[key] === '') return;
+            if (key === 'foto' && formData[key] === null) return;
+            
+            if (formData[key] !== null) {
+                dataToSend.append(key, formData[key]);
+            }
+        });
 
-        // Si el campo contraseña está vacío, lo quitamos para no sobrescribirla
-        if (!dataToSend.password) {
-            delete dataToSend.password;
-        } else if (dataToSend.password.length < 8) {
-            setError('Si cambias la contraseña, debe tener al menos 8 caracteres.');
+        if (formData.password && formData.password.length < 8) {
+            setError('La contraseña debe tener al menos 8 caracteres.');
             return;
         }
 
         try {
-            // Usamos PATCH para actualizar
             await axios.patch(`http://127.0.0.1:8000/api/usuarios/${id}/`, dataToSend, {
-                headers: { 'Authorization': `Token ${token}` }
+                headers: { 
+                    'Authorization': `Token ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
             });
-            
             navigate('/usuarios');
-
         } catch (err) {
-            console.error("Error al actualizar:", err.response?.data);
-            if (err.response && err.response.data && err.response.data.username) {
-                setError(`Error: ${err.response.data.username[0]}`); 
-            } else {
-                setError('Error al actualizar el usuario. Revisa los campos.');
-            }
+            console.error("Error:", err.response?.data);
+            const data = err.response?.data;
+            if (data?.rut) setError(`Error en RUT: ${data.rut[0]}`);
+            else setError('Error al actualizar usuario.');
         }
     };
 
-    if (loading) return <p style={{padding: '20px'}}>Cargando datos del usuario...</p>;
+    if (loading) return <p className="loading-msg">Cargando...</p>;
 
     return (
         <div className="edit-form-container"> 
-            <h1>Editar Usuario (ID: {id})</h1>
-            
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-
+            <h1>Editar Usuario</h1>
+            {error && <p className="error-msg">{error}</p>}
             <form onSubmit={handleSubmit}>
                 <div className="perfil-form-grid"> 
-                    
                     <div className="form-column">
-                        <div className="form-group">
-                            <label htmlFor="nombres">Nombres</label>
-                            <input type="text" name="nombres" value={formData.nombres} onChange={handleChange} required />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="username">Correo (Login)</label>
-                            <input type="email" name="username" value={formData.username} onChange={handleChange} required />
-                        </div>
-                         <div className="form-group">
-                            <label htmlFor="rut">RUT</label>
-                            <input type="text" name="rut" value={formData.perfil.rut} onChange={handleChange} />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="ocupacion">Ocupación</label>
-                            <input type="text" name="ocupacion" value={formData.perfil.ocupacion} onChange={handleChange} />
-                        </div>
+                        <div className="form-group"><label>Nombres</label><input type="text" name="nombres" value={formData.nombres} onChange={handleChange} required /></div>
+                        <div className="form-group"><label>Correo (Login)</label><input type="email" name="username" value={formData.username} onChange={handleChange} required /></div>
+                        
+                        {/* INPUT RUT CON FORMATO */}
+                        <div className="form-group"><label>RUT</label><input type="text" name="rut" value={formData.rut} onChange={handleChange} placeholder="12.345.678-9" maxLength={12} /></div>
+                        
+                        <div className="form-group"><label>Ocupación</label><input type="text" name="ocupacion" value={formData.ocupacion} onChange={handleChange} /></div>
+                        <div className="form-group"><label>Cambiar Foto</label><input type="file" name="foto" accept="image/*" onChange={handleChange} style={{padding:'6px'}}/></div>
                     </div>
-                    
                     <div className="form-column">
-                        <div className="form-group">
-                            <label htmlFor="apellidos">Apellidos</label>
-                            <input type="text" name="apellidos" value={formData.apellidos} onChange={handleChange} required />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="email">Email (Contacto)</label>
-                            <input type="email" name="email" value={formData.email} onChange={handleChange} />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="area">Área</label>
-                            <input type="text" name="area" value={formData.perfil.area} onChange={handleChange} />
-                        </div>
-                         <div className="form-group">
-                            <label htmlFor="password">Nueva Contraseña (Opcional)</label>
-                            <input 
-                                type="password" 
-                                name="password" 
-                                placeholder="Dejar en blanco para mantener la actual"
-                                value={formData.password} 
-                                onChange={handleChange} 
-                            />
-                        </div>
+                        <div className="form-group"><label>Apellidos</label><input type="text" name="apellidos" value={formData.apellidos} onChange={handleChange} required /></div>
+                        <div className="form-group"><label>Email (Contacto)</label><input type="email" name="email" value={formData.email} onChange={handleChange} /></div>
+                        <div className="form-group"><label>Área</label><input type="text" name="area" value={formData.area} onChange={handleChange} /></div>
+                        <div className="form-group"><label>Nueva Contraseña (Opcional)</label><input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Dejar en blanco para mantener" /></div>
                     </div>
                 </div>
-
                 <div className="form-group-checkboxes">
-                    <div className="checkbox-wrapper">
-                        <input type="checkbox" name="rol" id="rol" checked={formData.rol} onChange={handleChange} />
-                        <label htmlFor="rol">¿Es Administrador?</label>
-                    </div>
-                    <div className="checkbox-wrapper">
-                        <input type="checkbox" name="estado" id="estado" checked={formData.estado} onChange={handleChange} />
-                        <label htmlFor="estado">¿Está Activo?</label>
-                    </div>
+                    <div className="checkbox-wrapper"><input type="checkbox" name="rol" checked={formData.rol} onChange={handleChange} /><label>¿Es Administrador?</label></div>
+                    <div className="checkbox-wrapper"><input type="checkbox" name="estado" checked={formData.estado} onChange={handleChange} /><label>¿Está Activo?</label></div>
                 </div>
-                
                 <button type="submit" className="save-button">Guardar Cambios</button>
             </form>
         </div>

@@ -1,4 +1,4 @@
-/* --- Estilos Generales de Tabla (Reutilizables) --- */
+/* --- Estilos Generales de Tabla (Base) --- */
 .table-container {
     background-color: #ffffff;
     border-radius: 8px;
@@ -16,6 +16,7 @@ table th, table td {
     padding: 12px 16px;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
 }
 
 table th {
@@ -30,43 +31,38 @@ table tbody tr:hover {
     background-color: #f7f7f7;
 }
 
-/* --- Botón de Acción (...) --- */
-.action-btn {
-    background-color: #333;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 4px 10px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.2s;
-}
+/* --- Estilos Específicos de Auditoría --- */
 
-.action-btn:hover {
-    background-color: #000;
-}
-
-/* --- Botón Crear --- */
-.create-button {
-    padding: 8px 14px;
-    border: none;
-    border-radius: 6px;
-    background-color: #F57F17; /* Naranja Coyahue */
-    color: white;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-left: 12px;
-    transition: background-color 0.3s ease;
-}
-
-.create-button:hover {
-    background-color: #E67E22;
-}
-
-/* --- Badges de Estado --- */
-.estado-tag {
+.audit-date {
     font-size: 12px;
+    color: #666;
+    white-space: nowrap; /* Evita que la fecha se parta en dos líneas */
+}
+
+.audit-user {
+    font-weight: 600;
+    color: #333;
+}
+
+.audit-details {
+    font-size: 13px;
+    color: #555;
+    font-family: monospace; /* Tipografía monoespaciada para datos técnicos */
+    background-color: #fafafa;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.empty-cell {
+    text-align: center;
+    padding: 30px !important;
+    color: #777;
+    font-style: italic;
+}
+
+/* --- Badges de Acción (Reutilizando lógica de colores) --- */
+.estado-tag {
+    font-size: 11px;
     padding: 3px 8px;
     border-radius: 12px;
     font-weight: 600;
@@ -74,17 +70,22 @@ table tbody tr:hover {
     display: inline-block;
 }
 
-.estado-tag.activo {
+.estado-tag.activo { /* Crear */
     background-color: #E8F5E9;
     color: #2E7D32;
 }
 
-.estado-tag.suspendido {
+.estado-tag.suspendido { /* Eliminar */
     background-color: #FFEBEE;
     color: #C62828;
 }
 
-/* --- Mensajes de Carga y Error --- */
+.estado-tag.modificado { /* Editar */
+    background-color: #E3F2FD;
+    color: #1565C0;
+}
+
+/* --- Mensajes --- */
 .loading-msg {
     padding: 20px;
     color: #666;
@@ -102,7 +103,7 @@ table tbody tr:hover {
     font-weight: 500;
 }
 
-/* --- Paginación (Estilos nuevos) --- */
+/* --- Paginación --- */
 .pagination-container {
     display: flex;
     justify-content: space-between;

@@ -1,8 +1,10 @@
+/* --- Estilos Generales de Tabla --- */
 .table-container {
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     overflow: hidden;
+    margin-top: 20px;
 }
 
 table {
@@ -14,6 +16,7 @@ table th, table td {
     padding: 12px 16px;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
 }
 
 table th {
@@ -21,8 +24,267 @@ table th {
     font-size: 12px;
     color: #555;
     text-transform: uppercase;
+    font-weight: 600;
 }
 
 table tbody tr:hover {
     background-color: #f7f7f7;
 }
+
+/* --- Clases Utilitarias --- */
+.text-center {
+    text-align: center;
+}
+
+.empty-cell {
+    text-align: center;
+    padding: 30px !important;
+    color: #777;
+    font-style: italic;
+}
+
+/* --- Header y Controles --- */
+.header-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-nuevo {
+    background-color: #F57F17;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.btn-nuevo:hover {
+    background-color: #E67E22;
+}
+
+/* --- Botón de Acción (...) --- */
+.btn-action {
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* --- Botón de Información (Specs) --- */
+.popover-cell {
+    position: relative;
+    text-align: center;
+    padding: 8px !important; 
+}
+
+.info-btn {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    color: #757575;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.info-btn:hover {
+    background-color: #F57F17;
+    color: white;
+    border-color: #F57F17;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(245, 127, 23, 0.2);
+}
+
+.info-btn.active {
+    background-color: #37474F;
+    color: white;
+    border-color: #37474F;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.icon-svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+    pointer-events: none;
+}
+
+/* --- Tarjeta Flotante (Quick View) --- */
+.popover-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.specs-floating-card {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    z-index: 1000;
+    overflow: hidden;
+    animation: slideUp 0.3s ease-out;
+}
+
+.specs-header {
+    background-color: #F57F17;
+    color: white;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.specs-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.close-specs {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.close-specs:hover { opacity: 1; }
+
+.specs-body { padding: 20px; }
+
+.specs-title {
+    margin-top: 0;
+    color: #333;
+    font-size: 15px;
+    margin-bottom: 12px;
+}
+
+.specs-separator {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 12px 0;
+}
+
+.specs-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.specs-body li {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #555;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed #f0f0f0;
+    padding-bottom: 4px;
+}
+
+.specs-body li strong {
+    color: #333;
+    font-weight: 600;
+}
+
+/* Estilos específicos para el documento/factura */
+.spec-item-doc {
+    margin-top: 12px;
+    border-top: 1px solid #eee;
+    padding-top: 8px;
+    color: #333;
+}
+
+.doc-link {
+    color: #F57F17;
+    text-decoration: none;
+    margin-left: 6px;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+.doc-link:hover {
+    color: #E67E22;
+    text-decoration: underline;
+}
+
+.doc-missing {
+    color: #999;
+    font-style: italic;
+}
+
+/* --- Paginación --- */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #fafafa;
+    border-top: 1px solid #eee;
+}
+
+.btn-pagination {
+    background-color: white;
+    border: 1px solid #ddd;
+    color: #555;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btn-pagination:hover:not(:disabled) {
+    background-color: #F57F17;
+    color: white;
+    border-color: #F57F17;
+}
+
+.btn-pagination:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #eee;
+}
+
+.pagination-info {
+    font-size: 14px;
+    color: #777;
+    font-weight: 500;
+}
+
+/* --- Animaciones --- */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translate(-50%, -40%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
+
+/* --- Mensajes --- */
+.loading-msg { padding: 20px; color: #666; font-style: italic; text-align: center; }
+.error-msg { color: #D32F2F; background-color: #FFEBEE; padding: 15px; margin: 20px; border-radius: 6px; text-align: center; font-weight: 500; }
