@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User 
-from .models import Perfil, Equipos, TiposDeEquipo, Estados, Reserva, Proveedores, RegistroAuditoria, Actividad
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+# AGREGADO: Importamos 'Insumo' y 'Sucursal'
+from .models import Perfil, Equipos, TiposDeEquipo, Estados, Reserva, Proveedores, RegistroAuditoria, Actividad, Insumo, Sucursal
 
 # --- Serializers Auxiliares ---
 class UsuarioSerializer(serializers.ModelSerializer):
@@ -11,6 +14,8 @@ class EstadoSerializer(serializers.ModelSerializer):
     class Meta: model = Estados; fields = ['id', 'nombre_estado']
 class ProveedorSerializer(serializers.ModelSerializer):
     class Meta: model = Proveedores; fields = ['id', 'nombre_proveedor']
+class SucursalSerializer(serializers.ModelSerializer):
+    class Meta: model = Sucursal; fields = ['id', 'nombre', 'direccion']
 class EquipoSimpleSerializer(serializers.ModelSerializer):
     class Meta: model = Equipos; fields = ['id', 'marca', 'modelo', 'nro_serie']
 
@@ -20,22 +25,63 @@ class EquipoSerializer(serializers.ModelSerializer):
     id_estado = EstadoSerializer(read_only=True, allow_null=True)
     id_proveedor = ProveedorSerializer(read_only=True, allow_null=True)
     id_usuario_responsable = UsuarioSerializer(read_only=True, allow_null=True) 
+    id_sucursal = SucursalSerializer(read_only=True, allow_null=True)
     
     tipo_id = serializers.PrimaryKeyRelatedField(queryset=TiposDeEquipo.objects.all(), source='id_tipo_equipo', write_only=True)
     estado_id = serializers.PrimaryKeyRelatedField(queryset=Estados.objects.all(), source='id_estado', write_only=True)
     proveedor_id = serializers.PrimaryKeyRelatedField(queryset=Proveedores.objects.all(), source='id_proveedor', write_only=True, allow_null=True, required=False)
     usuario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), source='id_usuario_responsable', write_only=True, allow_null=True, required=False)
+    sucursal_id = serializers.PrimaryKeyRelatedField(queryset=Sucursal.objects.all(), source='id_sucursal', write_only=True, allow_null=True, required=False)
+    sucursal_nombre = serializers.CharField(write_only=True, required=False, allow_blank=True)
     factura = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
         model = Equipos
-        fields = ['id', 'nro_serie', 'marca', 'modelo', 'fecha_compra', 'rut_asociado', 'procesador', 'ram', 'almacenamiento', 'factura', 'id_tipo_equipo', 'id_estado', 'id_proveedor', 'id_usuario_responsable', 'tipo_id', 'estado_id', 'proveedor_id', 'usuario_id']
+        fields = ['id', 'nro_serie', 'marca', 'modelo', 'fecha_compra', 'warranty_end_date', 'rut_asociado', 'procesador', 'ram', 'almacenamiento', 'factura', 'id_tipo_equipo', 'id_estado', 'id_proveedor', 'id_usuario_responsable', 'id_sucursal', 'tipo_id', 'estado_id', 'proveedor_id', 'usuario_id', 'sucursal_id', 'sucursal_nombre']
+
+# --- Serializer de Equipos ---
+class EquipoSerializer(serializers.ModelSerializer):
+    id_tipo_equipo = TipoEquipoSerializer(read_only=True, allow_null=True)
+    id_estado = EstadoSerializer(read_only=True, allow_null=True)
+    id_proveedor = ProveedorSerializer(read_only=True, allow_null=True)
+    id_usuario_responsable = UsuarioSerializer(read_only=True, allow_null=True) 
+    id_sucursal = SucursalSerializer(read_only=True, allow_null=True)
+    
+    tipo_id = serializers.PrimaryKeyRelatedField(queryset=TiposDeEquipo.objects.all(), source='id_tipo_equipo', write_only=True)
+    estado_id = serializers.PrimaryKeyRelatedField(queryset=Estados.objects.all(), source='id_estado', write_only=True)
+    proveedor_id = serializers.PrimaryKeyRelatedField(queryset=Proveedores.objects.all(), source='id_proveedor', write_only=True, allow_null=True, required=False)
+    usuario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), source='id_usuario_responsable', write_only=True, allow_null=True, required=False)
+    sucursal_id = serializers.PrimaryKeyRelatedField(queryset=Sucursal.objects.all(), source='id_sucursal', write_only=True, allow_null=True, required=False)
+    sucursal_nombre = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    factura = serializers.FileField(required=False, allow_null=True)
+
+    class Meta:
+        model = Equipos
+        fields = ['id', 'nro_serie', 'marca', 'modelo', 'fecha_compra', 'warranty_end_date', 'rut_asociado', 'procesador', 'ram', 'almacenamiento', 'factura', 'id_tipo_equipo', 'id_estado', 'id_proveedor', 'id_usuario_responsable', 'id_sucursal', 'tipo_id', 'estado_id', 'proveedor_id', 'usuario_id', 'sucursal_id', 'sucursal_nombre']
+
+    def create(self, validated_data):
+        sucursal = validated_data.pop('id_sucursal', None)
+        sucursal_nombre = validated_data.pop('sucursal_nombre', '').strip()
+        if not sucursal and sucursal_nombre:
+            sucursal, _ = Sucursal.objects.get_or_create(nombre=sucursal_nombre)
+        if sucursal:
+            validated_data['id_sucursal'] = sucursal
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        sucursal = validated_data.pop('id_sucursal', None)
+        sucursal_nombre = validated_data.pop('sucursal_nombre', '').strip()
+        if not sucursal and sucursal_nombre:
+            sucursal, _ = Sucursal.objects.get_or_create(nombre=sucursal_nombre)
+        if sucursal is not None:
+            instance.id_sucursal = sucursal
+        return super().update(instance, validated_data)
 
 # --- Serializer de Perfil ---
 class PerfilSerializer(serializers.ModelSerializer):
     class Meta:
         model = Perfil
-        fields = ['rut', 'area', 'ocupacion', 'foto'] 
+        fields = ['rut', 'area', 'ocupacion', 'foto']
 
 # --- Serializer para "Mi Perfil" ---
 class UserPerfilSerializer(serializers.ModelSerializer):
@@ -47,13 +93,13 @@ class UserPerfilSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'nombres', 'apellidos', 'perfil', 'equipos_asignados', 'es_admin']
+        fields = ['id','username', 'email', 'nombres', 'apellidos', 'perfil', 'equipos_asignados', 'es_admin']
 
 # --- Serializer para Gestión de Usuarios ---
 class UserManagementSerializer(serializers.ModelSerializer):
     nombres = serializers.CharField(source='first_name')
     apellidos = serializers.CharField(source='last_name')
-    rol = serializers.BooleanField(source='is_staff', default=False) 
+    rol = serializers.BooleanField(source='is_staff', default=False)
     estado = serializers.BooleanField(source='is_active', default=True)
     ultimo_acceso = serializers.DateTimeField(source='last_login', read_only=True)
     
@@ -98,7 +144,7 @@ class UserManagementSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if password: instance.set_password(password)
-        instance.save() 
+        instance.save()
 
         perfil = instance.perfil
         if rut is not None: perfil.rut = rut
@@ -136,8 +182,73 @@ class RegistroAuditoriaSerializer(serializers.ModelSerializer):
     def get_usuario_nombre(self, obj):
         return obj.usuario.username if obj.usuario else "Usuario Eliminado / Sistema"
 
-# --- ESTO ES LO QUE FALTABA: SERIALIZER DE ACTIVIDADES ---
+# --- Serializer de Actividades ---
 class ActividadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Actividad
+        fields = '__all__'
+
+# --- Serializer adaptado para endpoints de tareas ---
+class TareaSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    title = serializers.CharField()
+    description = serializers.CharField(required=False, allow_blank=True)
+    due_date = serializers.DateField(required=False, allow_null=True)
+    due_time = serializers.TimeField(required=False, allow_null=True)
+    due_datetime = serializers.DateTimeField(required=False, allow_null=True)
+    is_important = serializers.BooleanField(required=False, default=False)
+    status = serializers.ChoiceField(choices=['pending', 'completed'], default='pending')
+    assigned_user_id = serializers.IntegerField()
+
+    def create(self, validated_data):
+        user_id = validated_data.get('assigned_user_id')
+        user = User.objects.get(pk=user_id)
+        etiqueta = 'urgente' if validated_data.get('is_important') else ('hecho' if validated_data.get('status') == 'completed' else 'pendiente')
+        dt = validated_data.get('due_datetime')
+        if dt is None:
+            dd = validated_data.get('due_date')
+            tt = validated_data.get('due_time') or '09:00:00'
+            if dd:
+                dt_str = f"{dd}T{tt}"
+                dt_parsed = parse_datetime(dt_str)
+                if dt_parsed is not None and timezone.is_naive(dt_parsed):
+                    dt = timezone.make_aware(dt_parsed, timezone.get_current_timezone())
+                else:
+                    dt = dt_parsed
+        actividad = Actividad.objects.create(
+            titulo=validated_data.get('title'),
+            descripcion=validated_data.get('description', ''),
+            tipo='tarea',
+            etiqueta=etiqueta,
+            usuario=user,
+            due_datetime=dt
+        )
+        return actividad
+
+    def to_representation(self, instance):
+        dd_iso = instance.due_datetime.isoformat() if instance.due_datetime else None
+        due_date = None
+        due_time = None
+        if instance.due_datetime:
+            due_date = instance.due_datetime.date().isoformat()
+            due_time = instance.due_datetime.time().strftime('%H:%M:%S')
+        return {
+            'id': instance.id,
+            'title': instance.titulo,
+            'description': instance.descripcion,
+            'due_datetime': dd_iso,
+            'due_date': due_date,
+            'due_time': due_time,
+            'is_important': instance.etiqueta == 'urgente',
+            'status': 'completed' if instance.etiqueta == 'hecho' else 'pending',
+            'assigned_user_id': instance.usuario_id,
+            'completed_at': instance.completed_at
+        }
+
+# ==============================================================================
+# SERIALIZER DE INSUMOS (NUEVO)
+# ==============================================================================
+class InsumoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Insumo
         fields = '__all__'

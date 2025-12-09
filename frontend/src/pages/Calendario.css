@@ -1,20 +1,230 @@
-.calendario-page {
-    padding: 20px;
+/* =========================================
+   ESTILOS CALENDARIO (CORREGIDO)
+   ========================================= */
+
+/* 1. VARIABLES LOCALES */
+.calendario-isolated-scope {
+    --cal-bg: #f4f6f8;
+    --cal-card: #ffffff;
+    --cal-text: #333333;
+    --cal-text-sec: #555555;
+    --cal-border: #e0e0e0;
+    --cal-primary: #ff8c00; /* Naranja */
+    --cal-today-bg: rgba(255, 140, 0, 0.1);
+    --cal-off-bg: #f9f9f9;
+    --cal-slot-bg: #ffffff;
+    --cal-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.calendario-container {
-    background-color: #fff;
-    padding: 20px;
+/* Modo Oscuro */
+body.dark .calendario-isolated-scope,
+body.dark-mode .calendario-isolated-scope {
+    --cal-bg: #121212;
+    --cal-card: #1e1e1e;
+    --cal-text: #e0e0e0;
+    --cal-text-sec: #aaaaaa;
+    --cal-border: #333333;
+    --cal-today-bg: rgba(255, 140, 0, 0.15);
+    --cal-off-bg: #252525;
+    --cal-slot-bg: #1e1e1e;
+    --cal-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+/* 2. ESTRUCTURA */
+.calendario-isolated-scope.calendario-page {
+    padding: 2rem;
+    background-color: var(--cal-bg);
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+    transition: background-color 0.3s ease;
+}
+
+.calendario-isolated-scope .calendario-header {
+    margin-bottom: 25px;
+}
+
+.calendario-isolated-scope h2 {
+    color: var(--cal-text);
+    font-size: 1.8rem;
+    margin: 0;
+    font-weight: 700;
+    border-left: 5px solid var(--cal-primary);
+    padding-left: 15px;
+}
+
+/* 3. TARJETA DEL CALENDARIO */
+.calendario-isolated-scope .calendario-card {
+    background-color: var(--cal-card);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--cal-shadow);
+    border: 1px solid var(--cal-border);
+    color: var(--cal-text); 
+    overflow: hidden;
+}
+
+/* =========================================
+   4. SOBRESCRITURA DE REACT-BIG-CALENDAR
+   ========================================= */
+
+.calendario-isolated-scope .rbc-calendar {
+    color: var(--cal-text);
+}
+
+/* Toolbar (Botones) */
+.calendario-isolated-scope .rbc-toolbar button {
+    color: var(--cal-text);
+    border: 1px solid var(--cal-border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.calendario-isolated-scope .rbc-toolbar button:hover {
+    background-color: var(--cal-off-bg);
+    border-color: var(--cal-primary);
+}
+
+.calendario-isolated-scope .rbc-toolbar button.rbc-active {
+    background-color: var(--cal-primary);
+    color: white;
+    border-color: var(--cal-primary);
+    box-shadow: none;
+}
+
+.calendario-isolated-scope .rbc-toolbar-label {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--cal-text);
+}
+
+/* Headers de Días */
+.calendario-isolated-scope .rbc-header {
+    padding: 10px;
+    font-weight: 600;
+    background-color: var(--cal-off-bg);
+    border-bottom: 1px solid var(--cal-border);
+    border-left: 1px solid var(--cal-border);
+    color: var(--cal-text-sec);
+}
+
+/* Celdas del Mes */
+.calendario-isolated-scope .rbc-month-view,
+.calendario-isolated-scope .rbc-month-row {
+    border-color: var(--cal-border);
+}
+
+.calendario-isolated-scope .rbc-day-bg + .rbc-day-bg {
+    border-left: 1px solid var(--cal-border);
+}
+
+.calendario-isolated-scope .rbc-off-range-bg {
+    background-color: var(--cal-off-bg);
+}
+
+.calendario-isolated-scope .rbc-today {
+    background-color: var(--cal-today-bg);
+}
+
+/* Eventos Generales */
+.calendario-isolated-scope .rbc-event {
+    border-radius: 4px;
+    padding: 2px 5px;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* =========================================
+   5. ARREGLO VISTA SEMANA Y DÍA
+   ========================================= */
+
+.calendario-isolated-scope .rbc-time-view {
+    border-color: var(--cal-border);
+    background-color: var(--cal-slot-bg);
+}
+
+.calendario-isolated-scope .rbc-time-header-content {
+    border-left: 1px solid var(--cal-border);
+}
+
+.calendario-isolated-scope .rbc-timeslot-group {
+    border-bottom: 1px solid var(--cal-border);
+    background-color: var(--cal-slot-bg);
+}
+
+.calendario-isolated-scope .rbc-time-content {
+    border-top: 1px solid var(--cal-border);
+}
+
+.calendario-isolated-scope .rbc-day-slot .rbc-time-slot {
+    border-top: 1px solid rgba(128, 128, 128, 0.1);
+}
+
+.calendario-isolated-scope .rbc-time-gutter .rbc-timeslot-group {
+    color: var(--cal-text-sec);
+    font-size: 0.85rem;
+    background-color: var(--cal-off-bg);
+    border-right: 1px solid var(--cal-border);
+}
+
+/* =========================================
+   6. ARREGLO VISTA AGENDA (CORREGIDO)
+   ========================================= */
+
+.calendario-isolated-scope .rbc-agenda-view table.rbc-agenda-table {
+    border: none;
+    border-spacing: 0 10px;
+    border-collapse: separate; 
+}
+
+.calendario-isolated-scope .rbc-agenda-view thead > tr > th {
+    border: none;
+    background-color: transparent;
+    color: var(--cal-text-sec);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--cal-border);
+}
+
+.calendario-isolated-scope .rbc-agenda-view tbody > tr {
+    background-color: var(--cal-off-bg);
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-/* Ajustes para que se vea mejor */
-.rbc-calendar {
-    font-family: Arial, sans-serif;
+.calendario-isolated-scope .rbc-agenda-view tbody > tr:hover {
+    background-color: var(--cal-today-bg);
+    cursor: pointer;
 }
 
-.rbc-event {
-    background-color: #F57F17; /* Naranja Coyahue */
+/* ESTILOS DE CELDA CORREGIDOS */
+.calendario-isolated-scope .rbc-agenda-view tbody > tr > td {
+    border: 1px solid var(--cal-border);
+    color: var(--cal-text);
+    padding: 15px;
+}
+
+.calendario-isolated-scope .rbc-agenda-view tbody > tr > td:first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+.calendario-isolated-scope .rbc-agenda-view tbody > tr > td:last-child {
+    border-radius: 0 8px 8px 0;
+}
+
+.calendario-isolated-scope .rbc-agenda-date-cell,
+.calendario-isolated-scope .rbc-agenda-time-cell,
+.calendario-isolated-scope .rbc-agenda-event-cell {
+    border-top: 1px solid var(--cal-border) !important;
+    border-bottom: 1px solid var(--cal-border) !important;
+}
+.calendario-isolated-scope .rbc-agenda-date-cell { border-left: 1px solid var(--cal-border) !important; }
+.calendario-isolated-scope .rbc-agenda-event-cell { border-right: 1px solid var(--cal-border) !important; }
+
+/* 7. CARGA */
+.calendario-loading {
+    display: flex; justify-content: center; align-items: center;
+    height: 100vh; color: var(--cal-text-sec); background-color: var(--cal-bg);
+    font-size: 1.2rem;
 }

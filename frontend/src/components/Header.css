@@ -1,0 +1,320 @@
+/* =========================================
+   ESTILOS DEL HEADER SUPERIOR
+   ========================================= */
+
+/* Variables de respaldo (por si no cargan las globales) */
+:root {
+    --hd-bg: #ffffff;
+    --hd-text: #333333;
+    --hd-border: #e0e0e0;
+    --hd-primary: #ff8c00;
+    --hd-hover: #f5f5f5;
+    --hd-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+body.dark, body.dark-mode {
+    --hd-bg: #1e1e1e;
+    --hd-text: #e0e0e0;
+    --hd-border: #333333;
+    --hd-hover: #2d2d2d;
+    --hd-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* 1. CONTENEDOR PRINCIPAL */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    height: 70px; /* Altura fija */
+    background-color: var(--hd-bg);
+    border-bottom: 1px solid var(--hd-border);
+    box-shadow: var(--hd-shadow);
+    position: sticky; /* Se queda pegado arriba si haces scroll */
+    top: 0;
+    z-index: 100; /* Por encima del contenido, pero debajo de modales */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* 2. MARCA / LOGO (Opcional) */
+.header-brand h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--hd-primary);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+/* 3. BUSCADOR CENTRAL */
+.header-search {
+    flex: 1;
+    max-width: 500px;
+    margin: 0 40px;
+}
+
+.search-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 15px 10px 40px; /* Espacio a la izq para el icono */
+    border-radius: 50px; /* Redondo moderno */
+    border: 1px solid var(--hd-border);
+    background-color: var(--hd-hover);
+    color: var(--hd-text);
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.search-input:focus {
+    background-color: var(--hd-bg);
+    border-color: var(--hd-primary);
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.15);
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    color: #999;
+    font-size: 1.1rem;
+}
+
+/* 4. ACCIONES (DERECHA) */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* --- CAMPANITA DE NOTIFICACIONES --- */
+.notification-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.notification-btn {
+    background: transparent;
+    border: none;
+    color: var(--hd-text);
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-btn:hover {
+    background-color: var(--hd-hover);
+    color: var(--hd-primary);
+}
+
+/* Puntito rojo o contador */
+.notification-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #e74c3c;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--hd-bg); /* Borde para separarlo del icono */
+}
+
+/* Animación de campana si hay nuevas */
+.notification-btn.has-new svg {
+    animation: swing 2s infinite ease-in-out;
+}
+
+@keyframes swing {
+    0%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(15deg); }
+    40% { transform: rotate(-10deg); }
+    60% { transform: rotate(5deg); }
+    80% { transform: rotate(-5deg); }
+}
+
+/* --- MENÚ DESPLEGABLE (DROPDOWN) --- */
+.notification-dropdown {
+    position: absolute;
+    top: 120%; /* Justo debajo del botón */
+    right: -10px; /* Alineado a la derecha */
+    width: 320px;
+    background-color: var(--hd-bg);
+    border: 1px solid var(--hd-border);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    z-index: 1000;
+    overflow: hidden;
+    animation: slideDown 0.2s ease-out;
+}
+
+.dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: var(--hd-hover);
+    border-bottom: 1px solid var(--hd-border);
+}
+
+.dropdown-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--hd-text);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--hd-text);
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.dropdown-body {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+/* Item de Notificación Individual */
+.notif-item {
+    padding: 15px;
+    border-bottom: 1px solid var(--hd-border);
+    display: flex;
+    gap: 12px;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.notif-item:hover {
+    background-color: var(--hd-hover);
+}
+
+.notif-item:last-child {
+    border-bottom: none;
+}
+
+.notif-icon {
+    font-size: 1.2rem;
+    background-color: rgba(255, 140, 0, 0.1);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.notif-content {
+    flex: 1;
+}
+
+.notif-title {
+    margin: 0 0 4px 0;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--hd-text);
+}
+
+.notif-desc {
+    margin: 0 0 6px 0;
+    font-size: 0.85rem;
+    color: #888;
+    line-height: 1.3;
+}
+
+.notif-date {
+    font-size: 0.75rem;
+    color: #aaa;
+    display: block;
+    text-align: right;
+}
+
+.notif-empty, .notif-msg {
+    text-align: center;
+    padding: 30px;
+    color: #888;
+    font-style: italic;
+}
+
+/* --- PERFIL --- */
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-left: 20px;
+    border-left: 1px solid var(--hd-border);
+}
+
+.user-info {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--hd-text);
+}
+
+.user-role {
+    font-size: 0.75rem;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--hd-primary);
+}
+
+.user-avatar-icon {
+    color: #ccc;
+}
+
+/* Botón Salir */
+.btn-logout {
+    background: transparent;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.btn-logout:hover {
+    background-color: rgba(231, 76, 60, 0.1);
+}
+
+/* Animaciones */
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .main-header { padding: 0 15px; }
+    .header-brand, .user-info { display: none; }
+    .header-search { margin: 0 10px; }
+}

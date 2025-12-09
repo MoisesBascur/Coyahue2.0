@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './Auditoria.css'; // Importamos el nuevo CSS dedicado
+import { useNavigate } from 'react-router-dom';
+import { ClockHistory, Person, Activity, Database, FileText } from 'react-bootstrap-icons';
+import './Auditoria.css'; // Importamos el nuevo diseño unificado
 
 export const Auditoria = () => {
     const [registros, setRegistros] = useState([]);
@@ -11,12 +13,19 @@ export const Auditoria = () => {
     const [nextPage, setNextPage] = useState(null);
     const [prevPage, setPrevPage] = useState(null);
     const [totalCount, setTotalCount] = useState(0);
+    
+    const navigate = useNavigate();
 
-    const fetchAuditoria = async (url = 'http://127.0.0.1:8000/api/auditoria/') => {
+    const fetchAuditoria = async (url) => {
         setLoading(true);
         const token = localStorage.getItem('authToken');
+        if (!token) { navigate('/login'); return; }
+
         try {
-            const response = await axios.get(url, {
+            // URL base con paginación de 10 si es la primera carga
+            const endpoint = url || 'http://127.0.0.1:8000/api/auditoria/?page_size=10';
+
+            const response = await axios.get(endpoint, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             
@@ -43,67 +52,79 @@ export const Auditoria = () => {
 
     const formatDate = (isoString) => {
         if (!isoString) return '-';
-        return new Date(isoString).toLocaleString('es-CL');
+        // Formato más limpio
+        return new Date(isoString).toLocaleString('es-CL', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        });
     };
 
-    if (loading) return <p className="loading-msg">Cargando registros...</p>;
-    if (error) return <p className="error-msg">{error}</p>;
+    // Helper para colores de acción
+    const getActionClass = (accion) => {
+        if (!accion) return '';
+        const act = accion.toLowerCase();
+        if (act.includes('crear') || act.includes('alta')) return 'status-active'; // Verde
+        if (act.includes('eliminar') || act.includes('baja')) return 'status-inactive'; // Rojo
+        if (act.includes('modificar') || act.includes('editar')) return 'status-warning'; // Naranja/Azul
+        return '';
+    };
+
+    if (loading) return <div className="auditoria-loading">Cargando registros...</div>;
+    if (error) return <div className="auditoria-error">{error}</div>;
 
     return (
-        <>
-            <header className="main-header">
-                <h1>Registro de Auditoría</h1>
+        /* CLASE CLAVE: auditoria-isolated-scope */
+        <div className="auditoria-page-container auditoria-isolated-scope">
+            
+            <header className="auditoria-header">
+                <h2><ClockHistory style={{marginRight: 10}}/> Registro de Auditoría</h2>
             </header>
 
-            <div className="table-container">
+            <div className="auditoria-table-wrapper">
                 <table>
                     <thead>
                         <tr>
-                            <th>Fecha y Hora</th>
-                            <th>Usuario</th>
-                            <th>Acción</th>
-                            <th>Modelo</th>
-                            <th>Detalle</th>
+                            <th><ClockHistory className="th-icon"/> Fecha y Hora</th>
+                            <th><Person className="th-icon"/> Usuario</th>
+                            <th><Activity className="th-icon"/> Acción</th>
+                            <th><Database className="th-icon"/> Modelo</th>
+                            <th><FileText className="th-icon"/> Detalle</th>
                         </tr>
                     </thead>
                     <tbody>
                         {registros.map(log => (
                             <tr key={log.id}>
-                                {/* Usamos clases específicas para cada columna */}
-                                <td className="audit-date">{formatDate(log.fecha)}</td>
-                                <td className="audit-user">{log.usuario_nombre}</td>
+                                <td className="font-mono text-sm">{formatDate(log.fecha)}</td>
+                                <td style={{fontWeight: '600'}}>{log.usuario_nombre}</td>
                                 <td>
-                                    <span className={`estado-tag ${
-                                        log.accion === 'Crear' ? 'activo' : 
-                                        log.accion === 'Eliminar' ? 'suspendido' : 'modificado'
-                                    }`}>
+                                    <span className={`status-badge ${getActionClass(log.accion)}`}>
                                         {log.accion}
                                     </span>
                                 </td>
-                                <td>{log.modelo_afectado}</td>
+                                <td className="text-muted">{log.modelo_afectado}</td>
                                 <td className="audit-details">{log.detalle}</td>
                             </tr>
                         ))}
                         {registros.length === 0 && (
                             <tr>
-                                <td colSpan="5" className="empty-cell">No hay registros aún.</td>
+                                <td colSpan="5" className="empty-state">No hay registros de auditoría.</td>
                             </tr>
                         )}
                     </tbody>
                 </table>
 
-                {/* --- CONTROLES DE PAGINACIÓN (Clases CSS) --- */}
+                {/* --- CONTROLES DE PAGINACIÓN --- */}
                 <div className="pagination-container">
                     <button 
                         onClick={() => prevPage && fetchAuditoria(prevPage)} 
                         disabled={!prevPage}
                         className="btn-pagination"
                     >
-                        Anterior
+                        &larr; Anterior
                     </button>
                     
                     <span className="pagination-info">
-                        Mostrando {registros.length} registros
+                        Viendo {registros.length} de {totalCount} registros
                     </span>
 
                     <button 
@@ -111,10 +132,10 @@ export const Auditoria = () => {
                         disabled={!nextPage}
                         className="btn-pagination"
                     >
-                        Siguiente
+                        Siguiente &rarr;
                     </button>
                 </div>
             </div>
-        </>
+        </div>
     );
 };

@@ -1,143 +1,205 @@
-/* --- Estilos Generales de Tabla (Reutilizables) --- */
-.table-container {
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    overflow: hidden;
-    margin-top: 20px;
+/* =========================================
+   ESTILOS DE USUARIOS (Igual a Inventario/Insumos)
+   ========================================= */
+
+/* 1. VARIABLES LOCALES */
+.users-isolated-scope {
+    --usr-bg: #f4f6f8;
+    --usr-card: #ffffff;
+    --usr-input: #ffffff;
+    --usr-text: #333333;
+    --usr-text-sec: #555555;
+    --usr-border: #e0e0e0;
+    --usr-primary: #ff8c00; /* Naranja */
+    --usr-header-table: #f8f9fa;
+    --usr-hover-row: #fafafa;
+    --usr-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
+/* Modo Oscuro */
+body.dark .users-isolated-scope,
+body.dark-mode .users-isolated-scope {
+    --usr-bg: #121212;
+    --usr-card: #1e1e1e;
+    --usr-input: #2d2d2d;
+    --usr-text: #e0e0e0;
+    --usr-text-sec: #aaaaaa;
+    --usr-border: #333333;
+    --usr-header-table: #252525;
+    --usr-hover-row: #2a2a2a;
+    --usr-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
-table th, table td {
-    padding: 12px 16px;
-    text-align: left;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-table th {
-    background-color: #f9f9f9;
-    font-size: 12px;
-    color: #555;
-    text-transform: uppercase;
-    font-weight: 600;
-}
-
-table tbody tr:hover {
-    background-color: #f7f7f7;
-}
-
-/* --- Botón de Acción (...) --- */
-.action-btn {
-    background-color: #333;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 4px 10px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.2s;
-}
-
-.action-btn:hover {
-    background-color: #000;
-}
-
-/* --- Botón Crear --- */
-.create-button {
-    padding: 8px 14px;
-    border: none;
-    border-radius: 6px;
-    background-color: #F57F17; /* Naranja Coyahue */
-    color: white;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-left: 12px;
+/* 2. CONTENEDOR */
+.users-isolated-scope.users-page-container {
+    padding: 2rem;
+    background-color: var(--usr-bg);
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
     transition: background-color 0.3s ease;
 }
 
-.create-button:hover {
-    background-color: #E67E22;
-}
-
-/* --- Badges de Estado --- */
-.estado-tag {
-    font-size: 12px;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-weight: 600;
-    text-transform: capitalize;
-    display: inline-block;
-}
-
-.estado-tag.activo {
-    background-color: #E8F5E9;
-    color: #2E7D32;
-}
-
-.estado-tag.suspendido {
-    background-color: #FFEBEE;
-    color: #C62828;
-}
-
-/* --- Mensajes de Carga y Error --- */
-.loading-msg {
-    padding: 20px;
-    color: #666;
-    font-style: italic;
-    text-align: center;
-}
-
-.error-msg {
-    color: #D32F2F;
-    background-color: #FFEBEE;
-    padding: 15px;
-    margin: 20px;
-    border-radius: 6px;
-    text-align: center;
-    font-weight: 500;
-}
-
-/* --- Paginación (Estilos nuevos) --- */
-.pagination-container {
+/* 3. HEADER */
+.users-isolated-scope .users-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
-    border-top: 1px solid #eee;
-    background-color: #fafafa;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
-.btn-pagination {
-    padding: 8px 16px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    background-color: #fff;
-    color: #333;
-    transition: all 0.2s ease;
+.users-isolated-scope h2 {
+    color: var(--usr-text);
+    font-size: 1.8rem;
+    margin: 0;
+    font-weight: 700;
+    border-left: 5px solid var(--usr-primary);
+    padding-left: 15px;
 }
 
-.btn-pagination:hover:not(:disabled) {
-    background-color: #F57F17;
+.users-isolated-scope .header-actions {
+    display: flex;
+    gap: 15px;
+}
+
+/* 4. BUSCADOR Y BOTONES */
+.users-isolated-scope .search-bar-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.users-isolated-scope .users-search-input {
+    padding: 10px 15px 10px 40px;
+    border: 1px solid var(--usr-border);
+    border-radius: 50px;
+    width: 280px;
+    background-color: var(--usr-input);
+    color: var(--usr-text);
+    outline: none;
+    transition: box-shadow 0.2s;
+}
+
+.users-isolated-scope .users-search-input:focus {
+    border-color: var(--usr-primary);
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
+}
+
+.users-isolated-scope .search-icon {
+    position: absolute;
+    left: 15px;
+    color: var(--usr-text-sec);
+}
+
+.users-isolated-scope .create-user-btn {
+    background-color: var(--usr-primary);
     color: white;
-    border-color: #F57F17;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center;
+    transition: transform 0.2s;
 }
 
-.btn-pagination:disabled {
-    background-color: #f5f5f5;
-    color: #aaa;
-    cursor: not-allowed;
-    border-color: #eee;
+.users-isolated-scope .create-user-btn:hover {
+    transform: scale(1.05);
 }
 
-.pagination-info {
-    color: #777;
-    font-size: 14px;
-    font-weight: 500;
+/* 5. TABLA */
+.users-isolated-scope .users-table-wrapper {
+    background-color: var(--usr-card);
+    border-radius: 12px;
+    box-shadow: var(--usr-shadow);
+    overflow: hidden;
+    border: 1px solid var(--usr-border);
 }
+
+.users-isolated-scope table { width: 100%; border-collapse: collapse; }
+
+.users-isolated-scope th {
+    background-color: var(--usr-header-table);
+    color: var(--usr-text-sec);
+    padding: 16px 20px;
+    text-align: left;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--usr-border);
+}
+
+.users-isolated-scope td {
+    padding: 14px 20px;
+    color: var(--usr-text);
+    border-bottom: 1px solid var(--usr-border);
+    vertical-align: middle;
+}
+
+.users-isolated-scope tbody tr:hover {
+    background-color: var(--usr-hover-row);
+}
+
+/* 6. DETALLES ESPECÍFICOS (Roles y Estado) */
+.users-isolated-scope .text-center { text-align: center; }
+
+/* Badge de Rol */
+.users-isolated-scope .rol-badge {
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 0.8rem; font-weight: 600;
+}
+.users-isolated-scope .rol-admin { background: rgba(52, 152, 219, 0.1); color: #3498db; }
+.users-isolated-scope .rol-user { background: rgba(128, 128, 128, 0.1); color: var(--usr-text-sec); }
+
+/* Indicador de Estado (Puntito) */
+.users-isolated-scope .status-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+.users-isolated-scope .status-dot.active { background-color: #2ecc71; box-shadow: 0 0 4px #2ecc71; }
+.users-isolated-scope .status-dot.inactive { background-color: #e74c3c; }
+
+/* Botón Editar */
+.users-isolated-scope .btn-action-edit {
+    background: transparent;
+    border: 1px solid var(--usr-border);
+    padding: 7px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--usr-text-sec);
+    transition: all 0.2s;
+}
+
+.users-isolated-scope .btn-action-edit:hover {
+    background-color: rgba(255, 140, 0, 0.1);
+    color: var(--usr-primary);
+    border-color: var(--usr-primary);
+}
+
+/* Paginación */
+.users-isolated-scope .pagination-container {
+    padding: 15px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    background-color: var(--usr-header-table);
+    border-top: 1px solid var(--usr-border);
+}
+
+.users-isolated-scope .btn-pagination {
+    background-color: var(--usr-card);
+    border: 1px solid var(--usr-border);
+    color: var(--usr-text);
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.users-isolated-scope .btn-pagination:hover:not(:disabled) {
+    border-color: var(--usr-primary);
+    color: var(--usr-primary);
+}
+.users-isolated-scope .btn-pagination:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.users-isolated-scope .pagination-info { font-size: 0.9rem; color: var(--usr-text-sec); }
+.users-isolated-scope .empty-state, .users-loading, .users-error { text-align: center; padding: 50px; color: var(--usr-text-sec); }

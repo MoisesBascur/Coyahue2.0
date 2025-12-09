@@ -1,8 +1,11 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  /* padding: 2rem; <-- OJO: Esto a veces añade márgenes blancos indeseados, puedes comentarlo si quieres que ocupe todo */
+  padding: 0;
   text-align: center;
+  width: 100%;
+  min-height: 100vh;
 }
 
 .logo {
@@ -19,12 +22,8 @@
 }
 
 @keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -41,11 +40,11 @@
   color: #888;
 }
 
-/* En index.css o App.css */
-html, body, #root {
+/* Reset básico */
+html, body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
-  box-sizing: border-box; /* Buena práctica */
+  box-sizing: border-box;
 }

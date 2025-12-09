@@ -1,124 +1,261 @@
-/* --- Contenedor Principal del Formulario --- */
-.edit-form-container {
-    max-width: 900px; /* Un poco más ancho para acomodar las dos columnas */
-    margin: 0 auto;
-    padding: 30px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+/* =========================================
+   ESTILOS EXCLUSIVOS: CREAR USUARIO
+   ========================================= */
+
+/* 1. VARIABLES LOCALES (Solo para esta página) */
+.create-user-scope {
+    --cu-bg: #f4f6f8;
+    --cu-card: #ffffff;
+    --cu-input: #ffffff;
+    --cu-text: #333333;
+    --cu-text-sec: #666666;
+    --cu-border: #e0e0e0;
+    --cu-primary: #ff8c00;      /* Naranja Corporativo */
+    --cu-primary-hover: #e67e00;
+    --cu-selected-bg: #fff8e1;  /* Fondo suave al seleccionar */
+    --cu-shadow: 0 4px 20px rgba(0,0,0,0.06);
 }
 
-.edit-form-container h1 {
-    font-size: 24px;
-    color: #333;
-    margin-top: 0;
-    margin-bottom: 24px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 12px;
+/* MODO OSCURO */
+body.dark .create-user-scope, 
+body.dark-mode .create-user-scope {
+    --cu-bg: #121212;
+    --cu-card: #1e1e1e;
+    --cu-input: #2d2d2d;
+    --cu-text: #e0e0e0;
+    --cu-text-sec: #aaaaaa;
+    --cu-border: #333333;
+    --cu-selected-bg: rgba(255, 140, 0, 0.15); /* Naranja transparente */
+    --cu-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
 
-/* --- Grid de Dos Columnas --- */
-.perfil-form-grid {
+/* 2. LAYOUT PRINCIPAL */
+.create-user-scope.create-user-page {
+    padding: 2rem;
+    background-color: var(--cu-bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    transition: background-color 0.3s ease;
+}
+
+.create-user-scope .create-card {
+    background-color: var(--cu-card);
+    width: 100%;
+    max-width: 850px;
+    padding: 3rem;
+    border-radius: 12px;
+    box-shadow: var(--cu-shadow);
+    border: 1px solid var(--cu-border);
+    margin-top: 20px;
+}
+
+/* Encabezado */
+.create-user-scope .card-header-user h2 {
+    margin: 0;
+    color: var(--cu-text);
+    font-size: 2rem;
+    font-weight: 700;
+    border-left: 5px solid var(--cu-primary);
+    padding-left: 15px;
+}
+
+.create-user-scope .card-header-user p {
+    color: var(--cu-text-sec);
+    margin-top: 8px;
+    margin-bottom: 30px;
+    padding-left: 20px;
+    font-size: 0.95rem;
+}
+
+/* 3. SELECTOR DE TIPO DE CUENTA (TARJETAS GRANDES) */
+.create-user-scope .account-type-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Divide el espacio en dos partes iguales */
-    gap: 24px; /* Espacio entre columnas */
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 35px;
 }
 
-.form-column {
-    display: flex;
-    flex-direction: column;
-    gap: 16px; /* Espacio vertical entre inputs */
-}
-
-/* --- Estilos de Inputs y Labels --- */
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group label {
-    font-size: 14px;
-    font-weight: 600;
-    color: #555;
-    margin-bottom: 6px;
-}
-
-.form-group input {
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #333;
-    transition: border-color 0.2s;
-    background-color: #fafafa;
-}
-
-.form-group input:focus {
-    outline: none;
-    border-color: #F57F17; /* Naranja al enfocar */
-    background-color: #fff;
-    box-shadow: 0 0 0 2px rgba(245, 127, 23, 0.1);
-}
-
-/* --- Sección de Checkboxes (Roles y Estado) --- */
-.form-group-checkboxes {
-    display: flex;
-    gap: 30px;
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-}
-
-.checkbox-wrapper {
+.create-user-scope .type-card {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 15px;
+    padding: 20px;
+    border: 2px solid var(--cu-border);
+    border-radius: 12px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: var(--cu-card);
+    position: relative;
+    overflow: hidden;
 }
 
-.checkbox-wrapper input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: #F57F17; /* Color del check nativo */
+/* Ocultar el radio button nativo */
+.create-user-scope .type-card input { display: none; }
+
+/* Efecto Hover */
+.create-user-scope .type-card:hover {
+    border-color: var(--cu-primary);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
 
-.checkbox-wrapper label {
-    font-size: 14px;
-    font-weight: 500;
-    color: #333;
-    cursor: pointer;
-    user-select: none; /* Evita seleccionar el texto al hacer clic */
+/* ESTADO ACTIVO (SELECCIONADO) */
+.create-user-scope .type-card.active {
+    border-color: var(--cu-primary);
+    background-color: var(--cu-selected-bg);
+    box-shadow: 0 0 0 1px var(--cu-primary); /* Borde doble sutil */
 }
 
-/* --- Botón de Crear --- */
-.save-button {
-    width: 100%;
-    margin-top: 30px;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    background-color: #F57F17; /* Naranja Coyahue */
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+/* Iconos dentro de las tarjetas */
+.create-user-scope .icon-box {
+    font-size: 1.8rem;
+    color: var(--cu-text-sec);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
 }
 
-.save-button:hover {
-    background-color: #E67E22; /* Un tono más oscuro al pasar el mouse */
+.create-user-scope .type-card.active .icon-box {
+    color: var(--cu-primary);
 }
 
-/* --- Responsivo para Móviles --- */
+/* Texto de las tarjetas */
+.create-user-scope .type-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.create-user-scope .type-info strong {
+    color: var(--cu-text);
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+}
+
+.create-user-scope .type-info span {
+    color: var(--cu-text-sec);
+    font-size: 0.85rem;
+}
+
+/* 4. FORMULARIO GRILLA */
+.create-user-scope .user-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
 @media (max-width: 768px) {
-    .perfil-form-grid {
-        grid-template-columns: 1fr; /* Una sola columna en pantallas pequeñas */
-        gap: 16px;
-    }
+    .create-user-scope .user-form-grid { grid-template-columns: 1fr; }
+}
 
-    .form-group-checkboxes {
-        flex-direction: column;
-        gap: 12px;
-    }
+.create-user-scope .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.create-user-scope label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    color: var(--cu-text-sec);
+}
+
+.create-user-scope input {
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid var(--cu-border);
+    background-color: var(--cu-input);
+    color: var(--cu-text);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.create-user-scope input:focus {
+    border-color: var(--cu-primary);
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
+}
+
+/* Caja de contraseña destacada */
+.create-user-scope .password-box input {
+    border-color: var(--cu-primary);
+    background-color: rgba(255, 140, 0, 0.03); /* Fondo muy sutil */
+}
+
+/* Sección de Foto */
+.create-user-scope .photo-section {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--cu-border);
+}
+
+.create-user-scope .file-input {
+    padding: 10px;
+    background-color: var(--cu-bg);
+}
+
+/* 5. BOTONES */
+.create-user-scope .form-footer {
+    margin-top: 40px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    border-top: 1px solid var(--cu-border);
+    padding-top: 25px;
+}
+
+.create-user-scope .btn-create {
+    background-color: var(--cu-primary);
+    color: white;
+    padding: 12px 30px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+.create-user-scope .btn-create:hover {
+    background-color: var(--cu-primary-hover);
+    transform: translateY(-1px);
+}
+
+.create-user-scope .btn-create:disabled {
+    background-color: var(--cu-border);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.create-user-scope .btn-cancel {
+    background: transparent;
+    border: 1px solid var(--cu-border);
+    color: var(--cu-text-sec);
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.create-user-scope .btn-cancel:hover {
+    background-color: var(--cu-bg);
+    color: var(--cu-text);
+    border-color: var(--cu-text-sec);
+}
+
+/* Banner de Error */
+.create-user-scope .error-banner {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border: 1px solid #e74c3c;
+    text-align: center;
+    font-weight: 500;
 }

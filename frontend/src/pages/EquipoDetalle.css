@@ -1,0 +1,215 @@
+/* =========================================
+   ESTILOS DETALLE EQUIPO (Consistente con Insumos/Inventario)
+   ========================================= */
+
+/* 1. VARIABLES LOCALES */
+.detalle-scope {
+    --dt-bg: #f4f6f8;
+    --dt-card: #ffffff;
+    --dt-text: #333333;
+    --dt-text-sec: #555555;
+    --dt-border: #e0e0e0;
+    --dt-primary: #ff8c00; /* Naranja Coyahue */
+    --dt-box-bg: #f8f9fa;
+    --dt-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+/* Modo Oscuro */
+body.dark .detalle-scope, 
+body.dark-mode .detalle-scope {
+    --dt-bg: #121212;
+    --dt-card: #1e1e1e;
+    --dt-text: #e0e0e0;
+    --dt-text-sec: #aaaaaa;
+    --dt-border: #333333;
+    --dt-box-bg: #2d2d2d;
+    --dt-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+/* 2. LAYOUT */
+.detalle-scope.detalle-page-container {
+    padding: 2rem;
+    background-color: var(--dt-bg);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    justify-content: center; /* Centrado horizontal */
+    align-items: flex-start;
+    transition: background-color 0.3s ease;
+}
+
+.detalle-wrapper {
+    width: 100%;
+    max-width: 900px; /* Ancho máximo para legibilidad */
+}
+
+.detalle-header-nav {
+    margin-bottom: 20px;
+}
+
+.btn-back {
+    background: transparent;
+    border: none;
+    color: var(--dt-primary);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0;
+    transition: opacity 0.2s;
+}
+.btn-back:hover { opacity: 0.8; text-decoration: underline; }
+
+/* 3. TARJETA PRINCIPAL */
+.detalle-card {
+    background-color: var(--dt-card);
+    border-radius: 12px;
+    padding: 2.5rem;
+    box-shadow: var(--dt-shadow);
+    border: 1px solid var(--dt-border);
+}
+
+/* Encabezado Tarjeta */
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.equipo-title {
+    margin: 0;
+    color: var(--dt-text);
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.equipo-serial {
+    color: var(--dt-text-sec);
+    margin: 5px 0 0 0;
+    font-size: 1.1rem;
+    font-family: monospace;
+}
+
+.status-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Badges */
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.type-badge {
+    background-color: var(--dt-box-bg);
+    color: var(--dt-text-sec);
+    border: 1px solid var(--dt-border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.status-active { background: rgba(46, 204, 113, 0.15); color: #27ae60; border: 1px solid rgba(46, 204, 113, 0.3); }
+.status-inactive { background: rgba(231, 76, 60, 0.15); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.3); }
+.status-warning { background: rgba(241, 196, 15, 0.15); color: #f39c12; border: 1px solid rgba(241, 196, 15, 0.3); }
+
+.divider { border: 0; border-top: 1px solid var(--dt-border); margin: 25px 0; }
+
+/* 4. GRILLA DE INFORMACIÓN */
+.detalle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 768px) {
+    .detalle-grid { grid-template-columns: 1fr; gap: 20px; }
+}
+
+.detalle-section h3 {
+    color: var(--dt-primary);
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--dt-border);
+    padding-bottom: 8px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--dt-border);
+    font-size: 0.95rem;
+}
+.info-row:last-child { border-bottom: none; }
+
+.label { font-weight: 600; color: var(--dt-text-sec); }
+.value { text-align: right; color: var(--dt-text); font-weight: 500; }
+.text-na { color: var(--dt-text-sec); font-style: italic; opacity: 0.7; }
+
+.highlight { 
+    background-color: rgba(255, 140, 0, 0.08); 
+    border-radius: 6px; 
+    padding: 10px; 
+    border-bottom: none; 
+    margin-bottom: 5px;
+}
+.value.strong { color: var(--dt-primary); font-weight: 700; }
+
+/* 5. SECCIÓN USUARIO */
+.asignacion-section { margin-top: 1rem; }
+
+.user-card-mini {
+    background-color: var(--dt-box-bg);
+    border: 1px solid var(--dt-border);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-details { display: flex; flex-direction: column; gap: 4px; }
+.user-email { font-weight: 700; color: var(--dt-text); font-size: 1rem; }
+.user-rut { font-size: 0.9rem; color: var(--dt-text-sec); }
+
+.user-status {
+    padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
+}
+.assigned { background: rgba(52, 152, 219, 0.1); color: #3498db; }
+.unassigned { background: rgba(128, 128, 128, 0.1); color: var(--dt-text-sec); }
+
+/* 6. FOOTER (FACTURA) */
+.card-footer {
+    margin-top: 30px;
+    text-align: right;
+    border-top: 1px solid var(--dt-border);
+    padding-top: 20px;
+}
+
+.btn-invoice {
+    display: inline-flex; align-items: center; gap: 8px;
+    background-color: #333; color: white;
+    padding: 10px 20px; border-radius: 6px;
+    text-decoration: none; font-weight: 600;
+    transition: background 0.2s;
+}
+.btn-invoice:hover { background-color: #555; }
+
+/* Carga */
+.loading-container { 
+    display: flex; justify-content: center; align-items: center; 
+    height: 100vh; background-color: var(--dt-bg); color: var(--dt-text-sec); 
+    font-size: 1.2rem; 
+}

@@ -1,25 +1,43 @@
+from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from rest_framework import status
+from rest_framework import status, generics
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User, update_last_login
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from django.db.models import Q
-from rest_framework import generics
-from .models import Actividad
-from .serializers import ActividadSerializer
+from django.utils import timezone
 
-
+# Modelos unificados
 from .models import (
-    Equipos, Perfil, TiposDeEquipo, Estados, Reserva, RegistroAuditoria, Proveedores
+    Actividad, Equipos, Perfil, TiposDeEquipo, Estados, 
+    Reserva, RegistroAuditoria, Proveedores, Insumo, Sucursal
 )
 
+# Serializers unificados
 from .serializers import (
-    EquipoSerializer, UserPerfilSerializer, UserManagementSerializer,
-    ReservaSerializer, RegistroAuditoriaSerializer, TipoEquipoSerializer,
-    EstadoSerializer, ProveedorSerializer
+    ActividadSerializer, EquipoSerializer, UserPerfilSerializer, 
+    UserManagementSerializer, ReservaSerializer, RegistroAuditoriaSerializer, 
+    TipoEquipoSerializer, EstadoSerializer, ProveedorSerializer, 
+    InsumoSerializer, TareaSerializer, SucursalSerializer
 )
+
+# --- FUNCIÓN AUXILIAR PARA CREAR NOTIFICACIONES (NUEVO) ---
+def crear_notificacion(usuario, titulo, descripcion):
+    """Crea una notificación en la campanita de forma segura"""
+    try:
+        Actividad.objects.create(
+            usuario=usuario,
+            tipo='notificacion',
+            titulo=titulo,
+            descripcion=descripcion,
+            fecha=timezone.now(),
+            due_datetime=timezone.now()
+        )
+        print(f"🔔 Notificación creada para {usuario.username}: {titulo}")
+    except Exception as e:
+        print(f"❌ Error creando notificación: {e}")
 
 # --- VISTA 1: LOGIN ---
 class LoginView(APIView):
@@ -64,20 +82,26 @@ class PerfilView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     def get_object(self): return self.request.user
 
-# --- VISTAS DE GESTIÓN DE USUARIOS (CON AUDITORÍA AÑADIDA) ---
+# --- GESTIÓN DE USUARIOS (CON NOTIFICACIONES DE AUDITORÍA) ---
 class UserListView(generics.ListCreateAPIView):
     queryset = User.objects.all().order_by('id') 
     serializer_class = UserManagementSerializer
     permission_classes = [IsAdminUser] 
 
-    # Auditoría al Crear Usuario
     def perform_create(self, serializer):
         instancia = serializer.save()
+        # 1. Auditoría
         RegistroAuditoria.objects.create(
             usuario=self.request.user,
             accion="Crear Usuario",
             modelo_afectado="Usuario",
-            detalle=f"ID: {instancia.id} - {instancia.username} ({instancia.first_name} {instancia.last_name})"
+            detalle=f"ID: {instancia.id} - {instancia.username}"
+        )
+        # 2. Notificación (Campanita)
+        crear_notificacion(
+            self.request.user, 
+            "Auditoría: Usuario Creado", 
+            f"Has creado al usuario {instancia.username}"
         )
 
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -85,7 +109,6 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserManagementSerializer
     permission_classes = [IsAdminUser]
 
-    # Auditoría al Editar Usuario
     def perform_update(self, serializer):
         instancia = serializer.save()
         RegistroAuditoria.objects.create(
@@ -94,8 +117,8 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
             modelo_afectado="Usuario",
             detalle=f"ID: {instancia.id} - {instancia.username}"
         )
+        crear_notificacion(self.request.user, "Auditoría: Usuario Editado", f"Modificaste a {instancia.username}")
 
-    # Auditoría al Eliminar Usuario
     def perform_destroy(self, instance):
         detalle_log = f"ID: {instance.id} - {instance.username}"
         instance.delete()
@@ -105,20 +128,31 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
             modelo_afectado="Usuario",
             detalle=detalle_log
         )
+        crear_notificacion(self.request.user, "Auditoría: Usuario Eliminado", f"Se eliminó: {detalle_log}")
 
-# --- VISTAS DE INVENTARIO (CON AUDITORÍA) ---
+# --- INVENTARIO (EQUIPOS) ---
 class EquipoListView(generics.ListCreateAPIView):
     queryset = Equipos.objects.all().order_by('id')
     serializer_class = EquipoSerializer
     permission_classes = [IsAuthenticated]
-
+    pagination_class = None
+    
     def perform_create(self, serializer):
         instancia = serializer.save()
+        
+        # 1. Auditoría
         RegistroAuditoria.objects.create(
             usuario=self.request.user,
             accion="Crear",
             modelo_afectado="Equipo",
             detalle=f"ID: {instancia.id} - {instancia.marca} {instancia.modelo}"
+        )
+        
+        # 2. Notificación de Nuevo Equipo
+        crear_notificacion(
+            self.request.user,
+            "Nuevo Equipo",
+            f"Agregado: {instancia.marca} {instancia.modelo} ({instancia.nro_serie})"
         )
 
 class EquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -132,11 +166,17 @@ class EquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
             usuario=self.request.user,
             accion="Editar",
             modelo_afectado="Equipo",
-            detalle=f"ID: {instancia.id} - {instancia.marca} {instancia.modelo}"
+            detalle=f"ID: {instancia.id}"
+        )
+        # Notificación de edición
+        crear_notificacion(
+            self.request.user,
+            "Auditoría: Equipo Editado",
+            f"Se actualizó: {instancia.marca} {instancia.modelo}"
         )
 
     def perform_destroy(self, instance):
-        detalle_log = f"ID: {instance.id} - {instance.marca} {instance.modelo}"
+        detalle_log = f"{instance.marca} {instance.modelo}"
         instance.delete()
         RegistroAuditoria.objects.create(
             usuario=self.request.user,
@@ -144,8 +184,38 @@ class EquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
             modelo_afectado="Equipo",
             detalle=detalle_log
         )
+        # Notificación de eliminación
+        crear_notificacion(
+            self.request.user,
+            "Auditoría: Equipo Eliminado",
+            f"Se eliminó: {detalle_log}"
+        )
 
-# --- VISTAS DE UTILIDADES ---
+# --- INSUMOS ---
+class InsumoListView(generics.ListCreateAPIView):
+    queryset = Insumo.objects.all().order_by('id')
+    serializer_class = InsumoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        instancia = serializer.save()
+        crear_notificacion(self.request.user, "Nuevo Insumo", f"Registrado: {instancia.nombre}")
+
+class InsumoDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Insumo.objects.all()
+    serializer_class = InsumoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_update(self, serializer):
+        instancia = serializer.save()
+        crear_notificacion(self.request.user, "Insumo Actualizado", f"Editado: {instancia.nombre}")
+
+    def perform_destroy(self, instance):
+        nombre = instance.nombre
+        instance.delete()
+        crear_notificacion(self.request.user, "Insumo Eliminado", f"Se borró: {nombre}")
+
+# --- UTILIDADES ---
 class TipoEquipoListView(generics.ListAPIView):
     queryset = TiposDeEquipo.objects.all()
     serializer_class = TipoEquipoSerializer
@@ -161,32 +231,50 @@ class ProveedorListView(generics.ListAPIView):
     serializer_class = ProveedorSerializer
     permission_classes = [IsAuthenticated]
 
-# --- VISTA DE AUDITORÍA ---
+class SucursalListView(generics.ListAPIView):
+    queryset = Sucursal.objects.all()
+    serializer_class = SucursalSerializer
+    permission_classes = [IsAuthenticated]
+
+# --- AUDITORÍA ---
 class AuditoriaListView(generics.ListAPIView):
     queryset = RegistroAuditoria.objects.all()
     serializer_class = RegistroAuditoriaSerializer
     permission_classes = [IsAdminUser]
 
-# --- VISTA DASHBOARD ---
+# --- DASHBOARD ---
 class DashboardDataView(APIView):
     permission_classes = [IsAuthenticated]
+    
     def get(self, request, *args, **kwargs):
         total_equipos = Equipos.objects.count()
         total_usuarios = User.objects.count()
-        try: estado_sin_uso_id = Estados.objects.filter(nombre_estado__icontains='Disponible').first().id
-        except AttributeError: estado_sin_uso_id = None
+        total_insumos = Insumo.objects.count()
+
+        try: 
+            estado_sin_uso_id = Estados.objects.filter(nombre_estado__icontains='Disponible').first().id
+        except AttributeError: 
+            estado_sin_uso_id = None
+        
         equipos_sin_uso = Equipos.objects.filter(id_estado=estado_sin_uso_id).count() if estado_sin_uso_id else 0
+        
         stock_general = []
         for tipo in TiposDeEquipo.objects.all():
             stock_general.append({'tipo': tipo.nombre_tipo, 'cantidad': Equipos.objects.filter(id_tipo_equipo=tipo).count()})
+        
         data = {
-            'kpis': {'total_equipos': total_equipos, 'total_usuarios': total_usuarios, 'equipos_sin_uso': equipos_sin_uso},
+            'kpis': {
+                'total_equipos': total_equipos, 
+                'total_usuarios': total_usuarios, 
+                'equipos_sin_uso': equipos_sin_uso,
+                'total_insumos': total_insumos
+            },
             'grafico_equipos_uso': {'en_uso': total_equipos - equipos_sin_uso, 'sin_uso': equipos_sin_uso},
             'grafico_stock_general': stock_general
         }
         return Response(data, status=status.HTTP_200_OK)
 
-# --- VISTAS DE RESERVAS ---
+# --- RESERVAS ---
 class ReservaListView(generics.ListCreateAPIView):
     queryset = Reserva.objects.all().order_by('id')
     serializer_class = ReservaSerializer
@@ -197,9 +285,74 @@ class ReservaDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ReservaSerializer
     permission_classes = [IsAuthenticated]
 
-# --- VISTA DE ACTIVIDADES ---
+# --- ACTIVIDADES Y TAREAS (¡AQUÍ ESTÁ LA MAGIA!) ---
 class ActividadListView(generics.ListCreateAPIView):
-    """ Lista actividades y permite crear nuevas """
-    queryset = Actividad.objects.all().order_by('-fecha') # Las más nuevas primero
+    queryset = Actividad.objects.all().order_by('-fecha')
     serializer_class = ActividadSerializer
     permission_classes = [IsAuthenticated]
+
+class TareaListView(generics.ListCreateAPIView):
+    queryset = Actividad.objects.filter(tipo='tarea').order_by('-fecha')
+    serializer_class = TareaSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def perform_create(self, serializer):
+        # 1. Crear la Tarea real (Se asigna al usuario que venía en el form)
+        instancia = serializer.save(tipo='tarea')
+        
+        # 2. Notificación para el CREADOR (Tú)
+        crear_notificacion(
+            self.request.user,
+            "Nueva Tarea Creada",
+            f"Asignaste la tarea '{instancia.titulo}' a {instancia.usuario.username}"
+        )
+
+        # 3. Notificación para el ASIGNADO (Si no eres tú mismo)
+        if instancia.usuario.id != self.request.user.id:
+            crear_notificacion(
+                instancia.usuario,
+                "Nueva Tarea Asignada",
+                f"{self.request.user.username} te asignó: {instancia.titulo}"
+            )
+
+class TareaDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Actividad.objects.filter(tipo='tarea')
+    serializer_class = TareaSerializer
+    permission_classes = [IsAuthenticated]
+
+class TareaCompleteView(APIView):
+    """ Vista para marcar una tarea como completada """
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        try:
+            tarea = Actividad.objects.get(pk=pk, tipo='tarea')
+        except Actividad.DoesNotExist:
+            return Response({"detail": "Tarea no encontrada"}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Marcar como hecho
+        tarea.etiqueta = 'hecho'
+        tarea.completed_at = timezone.now()
+        tarea.save()
+        
+        # --- AQUÍ AGREGAMOS LA NOTIFICACIÓN AL COMPLETAR ---
+        crear_notificacion(
+            request.user,
+            "Tarea Completada",
+            f"Has finalizado con éxito: {tarea.titulo}"
+        )
+        
+        data = TareaSerializer(tarea).data
+        return Response(data, status=status.HTTP_200_OK)
+
+# --- VISTA DE LA CAMPANITA ---
+class NotificacionListView(generics.ListAPIView):
+    """ Devuelve solo notificaciones para la campanita del usuario actual """
+    serializer_class = ActividadSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Actividad.objects.filter(
+            tipo='notificacion', 
+            usuario=self.request.user
+        ).order_by('-fecha')

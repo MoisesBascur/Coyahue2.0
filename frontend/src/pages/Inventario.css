@@ -1,290 +1,226 @@
-/* --- Estilos Generales de Tabla --- */
-.table-container {
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+/* =========================================
+   ESTILOS INVENTARIO (Igual a Insumos)
+   ========================================= */
+
+/* 1. VARIABLES (Scoped) */
+.inventario-isolated-scope {
+    --inv-bg: #f4f6f8;
+    --inv-card: #ffffff;
+    --inv-input: #ffffff;
+    --inv-text: #333333;
+    --inv-text-sec: #555555;
+    --inv-border: #e0e0e0;
+    --inv-primary: #ff8c00; /* Naranja */
+    --inv-header-table: #f8f9fa;
+    --inv-hover-row: #fafafa;
+    --inv-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Modo oscuro */
+body.dark .inventario-isolated-scope,
+body.dark-mode .inventario-isolated-scope {
+    --inv-bg: #121212;
+    --inv-card: #1e1e1e;
+    --inv-input: #2d2d2d;
+    --inv-text: #e0e0e0;
+    --inv-text-sec: #aaaaaa;
+    --inv-border: #333333;
+    --inv-header-table: #252525;
+    --inv-hover-row: #2a2a2a;
+    --inv-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+/* 2. CONTENEDOR */
+.inventario-isolated-scope.inventario-page-container {
+    padding: 2rem;
+    background-color: var(--inv-bg);
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+    transition: background-color 0.3s ease;
+}
+
+/* 3. HEADER */
+.inventario-isolated-scope .inventario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.inventario-isolated-scope h2 {
+    color: var(--inv-text);
+    font-size: 1.8rem;
+    margin: 0;
+    font-weight: 700;
+    border-left: 5px solid var(--inv-primary);
+    padding-left: 15px;
+}
+
+.inventario-isolated-scope .header-actions {
+    display: flex;
+    gap: 15px;
+}
+
+/* 4. BUSCADOR Y BOTONES */
+.inventario-isolated-scope .search-bar-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.inventario-isolated-scope .inventario-search-input {
+    padding: 10px 15px 10px 40px;
+    border: 1px solid var(--inv-border);
+    border-radius: 50px;
+    width: 280px;
+    background-color: var(--inv-input);
+    color: var(--inv-text);
+    outline: none;
+    transition: box-shadow 0.2s;
+}
+
+.inventario-isolated-scope .inventario-search-input:focus {
+    border-color: var(--inv-primary);
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
+}
+
+.inventario-isolated-scope .search-icon {
+    position: absolute;
+    left: 15px;
+    color: var(--inv-text-sec);
+}
+
+.inventario-isolated-scope .create-btn {
+    background-color: var(--inv-primary);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center;
+    transition: transform 0.2s;
+}
+
+.inventario-isolated-scope .create-btn:hover {
+    transform: scale(1.05);
+}
+
+/* 5. TABLA */
+.inventario-isolated-scope .inventario-table-wrapper {
+    background-color: var(--inv-card);
+    border-radius: 12px;
+    box-shadow: var(--inv-shadow);
     overflow: hidden;
-    margin-top: 20px;
+    border: 1px solid var(--inv-border);
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
+.inventario-isolated-scope table { width: 100%; border-collapse: collapse; }
 
-table th, table td {
-    padding: 12px 16px;
+.inventario-isolated-scope th {
+    background-color: var(--inv-header-table);
+    color: var(--inv-text-sec);
+    padding: 16px 20px;
     text-align: left;
-    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--inv-border);
+}
+
+.inventario-isolated-scope td {
+    padding: 14px 20px;
+    color: var(--inv-text);
+    border-bottom: 1px solid var(--inv-border);
     vertical-align: middle;
 }
 
-table th {
-    background-color: #f9f9f9;
-    font-size: 12px;
-    color: #555;
-    text-transform: uppercase;
-    font-weight: 600;
+.inventario-isolated-scope tbody tr:hover {
+    background-color: var(--inv-hover-row);
 }
 
-table tbody tr:hover {
-    background-color: #f7f7f7;
-}
+/* 6. ESTILOS ESPECÍFICOS (Badges, Botones) */
+.inventario-isolated-scope .text-center { text-align: center; }
+.inventario-isolated-scope .text-muted { color: var(--inv-text-sec); font-style: italic; opacity: 0.6; }
 
-/* --- Clases Utilitarias --- */
-.text-center {
-    text-align: center;
+/* Status Badges */
+.inventario-isolated-scope .status-badge {
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
 }
+.inventario-isolated-scope .status-active { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
+.inventario-isolated-scope .status-warning { background: rgba(241, 196, 15, 0.15); color: #f39c12; }
+.inventario-isolated-scope .status-danger { background: rgba(231, 76, 60, 0.15); color: #e74c3c; }
 
-.empty-cell {
-    text-align: center;
-    padding: 30px !important;
-    color: #777;
-    font-style: italic;
-}
-
-/* --- Header y Controles --- */
-.header-wrapper {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.header-controls {
-    display: flex;
-    gap: 10px;
-}
-
-.btn-nuevo {
-    background-color: #F57F17;
-    color: white;
-    border: none;
-    padding: 8px 16px;
+/* Action Buttons */
+.inventario-isolated-scope .btn-icon {
+    background: transparent;
+    border: 1px solid var(--inv-border);
+    padding: 7px;
     border-radius: 6px;
     cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-    transition: background-color 0.2s;
-}
-
-.btn-nuevo:hover {
-    background-color: #E67E22;
-}
-
-/* --- Botón de Acción (...) --- */
-.btn-action {
-    background-color: #333;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 4px 10px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-/* --- Botón de Información (Specs) --- */
-.popover-cell {
-    position: relative;
-    text-align: center;
-    padding: 8px !important; 
-}
-
-.info-btn {
-    background-color: #ffffff;
-    border: 1px solid #e0e0e0;
-    color: #757575;
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.info-btn:hover {
-    background-color: #F57F17;
-    color: white;
-    border-color: #F57F17;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(245, 127, 23, 0.2);
-}
-
-.info-btn.active {
-    background-color: #37474F;
-    color: white;
-    border-color: #37474F;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.icon-svg {
-    width: 18px;
-    height: 18px;
-    stroke-width: 2;
-    pointer-events: none;
-}
-
-/* --- Tarjeta Flotante (Quick View) --- */
-.popover-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.3);
-    z-index: 999;
-    animation: fadeIn 0.2s ease-out;
-}
-
-.specs-floating-card {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 320px;
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    z-index: 1000;
-    overflow: hidden;
-    animation: slideUp 0.3s ease-out;
-}
-
-.specs-header {
-    background-color: #F57F17;
-    color: white;
-    padding: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.specs-header h4 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.close-specs {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    line-height: 1;
-    opacity: 0.8;
-    transition: opacity 0.2s;
-}
-
-.close-specs:hover { opacity: 1; }
-
-.specs-body { padding: 20px; }
-
-.specs-title {
-    margin-top: 0;
-    color: #333;
-    font-size: 15px;
-    margin-bottom: 12px;
-}
-
-.specs-separator {
-    border: 0;
-    border-top: 1px solid #eee;
-    margin: 12px 0;
-}
-
-.specs-body ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.specs-body li {
-    margin-bottom: 10px;
-    font-size: 14px;
-    color: #555;
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px dashed #f0f0f0;
-    padding-bottom: 4px;
-}
-
-.specs-body li strong {
-    color: #333;
-    font-weight: 600;
-}
-
-/* Estilos específicos para el documento/factura */
-.spec-item-doc {
-    margin-top: 12px;
-    border-top: 1px solid #eee;
-    padding-top: 8px;
-    color: #333;
-}
-
-.doc-link {
-    color: #F57F17;
-    text-decoration: none;
-    margin-left: 6px;
-    font-weight: bold;
-    transition: color 0.2s;
-}
-
-.doc-link:hover {
-    color: #E67E22;
-    text-decoration: underline;
-}
-
-.doc-missing {
-    color: #999;
-    font-style: italic;
-}
-
-/* --- Paginación --- */
-.pagination-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    background-color: #fafafa;
-    border-top: 1px solid #eee;
-}
-
-.btn-pagination {
-    background-color: white;
-    border: 1px solid #ddd;
-    color: #555;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
+    font-size: 1rem;
+    color: var(--inv-text-sec);
     transition: all 0.2s;
 }
 
-.btn-pagination:hover:not(:disabled) {
-    background-color: #F57F17;
-    color: white;
-    border-color: #F57F17;
+.inventario-isolated-scope .btn-icon:hover {
+    color: var(--inv-primary);
+    border-color: var(--inv-primary);
+    background-color: rgba(255, 140, 0, 0.05);
 }
 
-.btn-pagination:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: #eee;
+.inventario-isolated-scope .btn-edit { color: #3498db; }
+.inventario-isolated-scope .btn-edit:hover { background-color: rgba(52, 152, 219, 0.1); border-color: #3498db; }
+
+/* Paginación */
+.inventario-isolated-scope .pagination-container {
+    padding: 15px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    background-color: var(--inv-header-table);
+    border-top: 1px solid var(--inv-border);
 }
 
-.pagination-info {
-    font-size: 14px;
-    color: #777;
-    font-weight: 500;
+.inventario-isolated-scope .btn-pagination {
+    background-color: var(--inv-card);
+    border: 1px solid var(--inv-border);
+    color: var(--inv-text);
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.inventario-isolated-scope .btn-pagination:hover:not(:disabled) {
+    border-color: var(--inv-primary);
+    color: var(--inv-primary);
+}
+.inventario-isolated-scope .btn-pagination:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.inventario-isolated-scope .pagination-info {
+    font-size: 0.9rem; color: var(--inv-text-sec);
 }
 
-/* --- Animaciones --- */
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { transform: translate(-50%, -40%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
+/* Tarjeta Flotante (Specs) */
+.specs-floating-card {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 340px; background: var(--inv-card); border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 1000;
+    border: 1px solid var(--inv-border); overflow: hidden;
+}
+.specs-header { background: var(--inv-primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+.specs-header h4 { margin: 0; font-size: 1rem; }
+.close-specs { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+.specs-body { padding: 20px; color: var(--inv-text); }
+.specs-title { margin: 0 0 5px 0; font-size: 1.1rem; }
+.specs-serial { color: var(--inv-text-sec); font-size: 0.85rem; font-family: monospace; margin: 0; }
+.specs-separator { border: 0; border-top: 1px solid var(--inv-border); margin: 15px 0; }
+.specs-list { list-style: none; padding: 0; margin: 0; }
+.specs-list li { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.9rem; border-bottom: 1px dashed var(--inv-border); }
+.spec-label { font-weight: 600; color: var(--inv-text-sec); }
+.spec-value { text-align: right; color: var(--inv-text); }
+.btn-invoice-mini { display: block; text-align: center; background: #333; color: white; padding: 10px; margin-top: 20px; border-radius: 6px; text-decoration: none; }
 
-/* --- Mensajes --- */
-.loading-msg { padding: 20px; color: #666; font-style: italic; text-align: center; }
-.error-msg { color: #D32F2F; background-color: #FFEBEE; padding: 15px; margin: 20px; border-radius: 6px; text-align: center; font-weight: 500; }
+.popover-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+.inventario-loading, .inventario-error, .empty-state { text-align: center; padding: 50px; color: var(--inv-text-sec); }

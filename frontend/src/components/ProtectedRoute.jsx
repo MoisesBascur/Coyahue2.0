@@ -1,16 +1,15 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 
+// USAMOS "export const" (NO default) PARA QUE COINCIDA CON APP.JSX
 export const ProtectedRoute = () => {
-    // 1. Verificamos si existe el token en el almacenamiento
     const token = localStorage.getItem('authToken');
 
-    // 2. Si NO hay token, redirigimos inmediatamente al Login
-    // 'replace' evita que el usuario pueda volver atrás con el botón del navegador
+    // Si no hay token, mandar al login
     if (!token) {
         return <Navigate to="/login" replace />;
     }
 
-    // 3. Si hay token, renderizamos el contenido hijo (las páginas protegidas)
+    // Si hay token, dejar pasar a las rutas hijas
     return <Outlet />;
 };

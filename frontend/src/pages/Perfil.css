@@ -1,179 +1,225 @@
-/* --- Contenedor Principal --- */
-.perfil-container {
-    max-width: 900px;
-    margin: 0 auto;
+/* =========================================
+   ESTILOS PERFIL (Basado en Insumos/Inventario)
+   ========================================= */
+
+/* 1. VARIABLES LOCALES */
+.perfil-isolated-scope {
+    --p-bg: #f4f6f8;
+    --p-card: #ffffff;
+    --p-input: #f9f9f9; /* Input un poco más gris para denotar readonly */
+    --p-text: #333333;
+    --p-text-sec: #555555;
+    --p-border: #e0e0e0;
+    --p-primary: #ff8c00; /* Naranja */
+    --p-header-table: #f8f9fa;
+    --p-hover-row: #fafafa;
+    --p-shadow: 0 4px 20px rgba(0,0,0,0.06);
 }
 
-/* --- Mensajes --- */
-.loading-msg {
-    padding: 20px;
-    color: #666;
-    font-style: italic;
+/* Modo Oscuro */
+body.dark .perfil-isolated-scope,
+body.dark-mode .perfil-isolated-scope {
+    --p-bg: #121212;
+    --p-card: #1e1e1e;
+    --p-input: #2d2d2d;
+    --p-text: #e0e0e0;
+    --p-text-sec: #aaaaaa;
+    --p-border: #333333;
+    --p-header-table: #252525;
+    --p-hover-row: #2a2a2a;
+    --p-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
 
-.error-msg {
-    color: #D32F2F;
-    background-color: #FFEBEE;
-    padding: 10px;
-    border-radius: 4px;
-    margin-bottom: 20px;
+/* 2. ESTRUCTURA */
+.perfil-isolated-scope.perfil-page-container {
+    padding: 2rem;
+    background-color: var(--p-bg);
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+    transition: background-color 0.3s ease;
 }
 
-.empty-msg {
-    color: #777;
-    font-style: italic;
-    padding: 10px 0;
+.perfil-isolated-scope .perfil-header {
+    margin-bottom: 30px;
 }
 
-/* --- Tarjeta Superior (Foto + Ocupación) --- */
-.perfil-header-card {
+.perfil-isolated-scope h2 {
+    color: var(--p-text);
+    font-size: 1.8rem;
+    margin: 0;
+    font-weight: 700;
+    border-left: 5px solid var(--p-primary);
+    padding-left: 15px;
+}
+
+/* Grilla Principal del Perfil */
+.perfil-isolated-scope .perfil-content-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr; /* Columna Izq fija, Der flexible */
+    gap: 25px;
+}
+
+@media (max-width: 900px) {
+    .perfil-isolated-scope .perfil-content-grid {
+        grid-template-columns: 1fr; /* Una sola columna en tablet/móvil */
+    }
+}
+
+/* 3. TARJETAS (Cards) */
+.perfil-isolated-scope .perfil-card {
+    background-color: var(--p-card);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--p-shadow);
+    border: 1px solid var(--p-border);
+    transition: background-color 0.3s ease;
+}
+
+.perfil-isolated-scope .full-width-card {
+    grid-column: 1 / -1; /* Ocupa todo el ancho abajo */
+}
+
+/* Tarjeta Resumen (Foto) */
+.perfil-isolated-scope .summary-card {
+    text-align: center;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 24px;
-    background-color: #ffffff;
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    margin-bottom: 24px;
 }
 
-.perfil-foto img {
-    width: 120px;
-    height: 120px;
+.perfil-isolated-scope .avatar-wrapper img {
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #f0f0f0;
+    border: 4px solid var(--p-primary);
+    margin-bottom: 15px;
 }
 
-.perfil-info-principal label {
-    font-size: 14px;
-    color: #555;
-    font-weight: 500;
+.perfil-isolated-scope .profile-name {
+    margin: 10px 0 5px 0;
+    font-size: 1.4rem;
+    color: var(--p-text);
 }
 
-.perfil-info-principal p {
-    font-size: 20px;
-    font-weight: bold;
-    color: #333;
-    margin: 4px 0 0 0;
+.perfil-isolated-scope .profile-role {
+    margin: 0 0 20px 0;
+    color: var(--p-text-sec);
+    font-size: 1rem;
 }
 
-/* --- Ajustes de Secciones (Reutilizando edit-form-container) --- */
-.section-no-top-margin {
-    margin-top: 0 !important;
-}
-
-.section-spaced {
-    margin-top: 24px !important;
-}
-
-.edit-form-container h3 {
-    font-size: 18px;
+/* Tarjeta Detalles (Formulario) */
+.perfil-isolated-scope .card-header-title h3 {
     margin-top: 0;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #eee;
+    color: var(--p-primary);
+    font-size: 1.2rem;
+    border-bottom: 1px solid var(--p-border);
     padding-bottom: 10px;
-    color: #333;
+    margin-bottom: 20px;
 }
 
-/* --- Grid del Formulario --- */
-.perfil-form-grid {
+.perfil-isolated-scope .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
 
-.form-column {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+@media (max-width: 600px) {
+    .perfil-isolated-scope .form-grid { grid-template-columns: 1fr; }
 }
 
-/* --- Campos Read-Only (Estilo Visual) --- */
-.form-group-readonly {
+.perfil-isolated-scope .form-group {
     display: flex;
     flex-direction: column;
 }
 
-.form-group-readonly label {
-    font-size: 14px;
+.perfil-isolated-scope label {
     font-weight: 600;
-    color: #555;
-    margin-bottom: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    color: var(--p-text-sec);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.form-group-readonly input {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    box-sizing: border-box;
-    background-color: #f9f9f9; /* Fondo gris suave */
-    color: #444;
-    cursor: default; /* Cursor normal, no de prohibido */
+.perfil-isolated-scope .icon { color: var(--p-primary); }
+
+.perfil-isolated-scope input {
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid var(--p-border);
+    background-color: var(--p-input);
+    color: var(--p-text);
+    font-size: 1rem;
+    outline: none;
+    cursor: default; /* Porque son readonly */
 }
 
-/* --- Tabla de Equipos Asignados --- */
-.equipos-table-wrapper {
-    margin-top: 10px;
-    border-radius: 6px;
-    overflow: hidden;
-    border: 1px solid #eee;
+/* 4. TABLA (Mis Equipos) */
+.perfil-isolated-scope .table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--p-border);
 }
 
-.equipos-table {
+.perfil-isolated-scope table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.equipos-table th {
-    background-color: #f5f5f5;
-    padding: 12px;
+.perfil-isolated-scope th {
+    background-color: var(--p-header-table);
+    color: var(--p-text-sec);
+    padding: 15px 20px;
     text-align: left;
-    font-size: 13px;
-    color: #555;
-    font-weight: 600;
+    font-size: 0.85rem;
     text-transform: uppercase;
+    font-weight: 700;
+    border-bottom: 2px solid var(--p-border);
 }
 
-.equipos-table td {
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-    font-size: 14px;
-    color: #333;
+.perfil-isolated-scope td {
+    padding: 15px 20px;
+    color: var(--p-text);
+    border-bottom: 1px solid var(--p-border);
 }
 
-.equipos-table tr:last-child td {
-    border-bottom: none;
+.perfil-isolated-scope tbody tr:hover {
+    background-color: var(--p-hover-row);
 }
 
-/* --- Badges de Estado (Reutilizables) --- */
-.status-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
+.perfil-isolated-scope .font-mono {
+    font-family: monospace;
+    color: var(--p-text-sec);
+}
+
+/* Badges */
+.perfil-isolated-scope .status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
     display: inline-block;
 }
 
-.status-active {
-    background-color: #E8F5E9;
-    color: #2E7D32;
+.perfil-isolated-scope .status-active {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #27ae60;
 }
 
-.status-inactive {
-    background-color: #FFEBEE;
-    color: #C62828;
+.perfil-isolated-scope .status-inactive {
+    background-color: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
 }
 
-/* --- Responsivo --- */
-@media (max-width: 768px) {
-    .perfil-header-card {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .perfil-form-grid {
-        grid-template-columns: 1fr;
-    }
+/* Mensajes */
+.perfil-isolated-scope .empty-state, .perfil-loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--p-text-sec);
+    font-style: italic;
 }
+.perfil-loading { display: flex; justify-content: center; align-items: center; height: 100vh; }
+.alert-error { background: rgba(231,76,60,0.1); color: #e74c3c; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; }

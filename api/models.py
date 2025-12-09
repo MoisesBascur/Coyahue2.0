@@ -11,18 +11,33 @@ class TiposDeEquipo(models.Model):
     """Catálogo para clasificar hardware (ej: Notebook, Monitor, Impresora)."""
     nombre_tipo = models.CharField(max_length=100, unique=True)
     def __str__(self): return self.nombre_tipo
-
+    
+    class Meta:
+        ordering = ['id']
+        
 class Estados(models.Model):
     """Catálogo de estados del ciclo de vida (ej: Activo, En Mantención, De Baja)."""
     nombre_estado = models.CharField(max_length=100, unique=True)
     def __str__(self): return self.nombre_estado
+    
+    class Meta:
+        ordering = ['id']
 
 class Proveedores(models.Model):
     """Registro de empresas proveedoras para trazabilidad de compras."""
     nombre_proveedor = models.CharField(max_length=255)
     def __str__(self): return self.nombre_proveedor
+    
+    #nuevo
+    class Meta:
+        ordering = ['id']
 
-
+class Sucursal(models.Model):
+    nombre = models.CharField(max_length=255, unique=True)
+    direccion = models.CharField(max_length=255, blank=True, null=True)
+    def __str__(self): return self.nombre
+    class Meta:
+        ordering = ['id']
 
 # ==============================================================================
 # 2. Menu ACTIVIDADES
@@ -47,6 +62,8 @@ class Actividad(models.Model):
     tipo = models.CharField(max_length=20, choices=TIPOS, default='tarea')
     etiqueta = models.CharField(max_length=20, choices=ETIQUETAS, default='pendiente')
     fecha = models.DateTimeField(auto_now_add=True)
+    due_datetime = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
     
     # Usuario al que se le asigna o que creó la actividad
     usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
@@ -54,62 +71,52 @@ class Actividad(models.Model):
     def __str__(self):
         return f"{self.tipo}: {self.titulo}"
 
-
-
 # ==============================================================================
 # 3. GESTIÓN DE USUARIOS
 # ==============================================================================
 
 class Perfil(models.Model):
-    """Extensión del usuario de Django con datos corporativos (RUT, Área, Foto)."""
     user = models.OneToOneField(User, on_delete=models.CASCADE) 
     rut = models.CharField(max_length=20, blank=True, null=True)
     area = models.CharField(max_length=100, blank=True, null=True)
     ocupacion = models.CharField(max_length=100, blank=True, null=True)
     foto = models.ImageField(upload_to='perfil_fotos/', null=True, blank=True)
 
-    def __str__(self):
+    def __str__(self): 
         return self.user.username
-
 
 # ==============================================================================
 # 4. INVENTARIO PRINCIPAL
 # ==============================================================================
 
 class Equipos(models.Model):
-    """Ficha principal del activo tecnológico con specs y relaciones."""
-    
-    # Identificación
     nro_serie = models.CharField(max_length=255, unique=True)
     marca = models.CharField(max_length=100)
     modelo = models.CharField(max_length=100)
     fecha_compra = models.DateField(null=True, blank=True)
+    warranty_end_date = models.DateField(null=True, blank=True)
     rut_asociado = models.CharField(max_length=20, blank=True, null=True)
     
-    # Especificaciones Técnicas
     procesador = models.CharField(max_length=100, blank=True, null=True)
     ram = models.CharField(max_length=50, blank=True, null=True)
     almacenamiento = models.CharField(max_length=100, blank=True, null=True)
     
-    # Documentación
     factura = models.FileField(upload_to='facturas_equipos/', null=True, blank=True)
 
-    # Relaciones (Foreign Keys)
     id_tipo_equipo = models.ForeignKey(TiposDeEquipo, on_delete=models.SET_NULL, null=True, blank=True)
     id_estado = models.ForeignKey(Estados, on_delete=models.SET_NULL, null=True, blank=True)
-    id_usuario_responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True) 
+    id_usuario_responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     id_proveedor = models.ForeignKey(Proveedores, on_delete=models.SET_NULL, null=True, blank=True)
+    id_sucursal = models.ForeignKey(Sucursal, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"{self.marca} {self.modelo} ({self.nro_serie})"
-
 
 # ==============================================================================
 # 5. OPERACIONES Y AUDITORÍA
 # ==============================================================================
 
 class Reserva(models.Model):
-    """Registro de asignaciones temporales de equipos a usuarios."""
     equipo = models.ForeignKey(Equipos, on_delete=models.CASCADE)
     usuario_solicitante = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha_inicio = models.DateTimeField()
@@ -124,9 +131,8 @@ class RegistroAuditoria(models.Model):
     detalle = models.CharField(max_length=255, blank=True, null=True)
     fecha = models.DateTimeField(auto_now_add=True)
     
-    class Meta: 
+    class Meta:
         ordering = ['-fecha']
-
 
 # ==============================================================================
 # 6. SEÑALES (Signals)
@@ -138,5 +144,29 @@ def crear_o_actualizar_perfil_de_usuario(sender, instance, created, **kwargs):
     if created:
         Perfil.objects.create(user=instance)
     instance.perfil.save()
+
+# ==============================================================================
+# 7. GESTIÓN DE INSUMOS (NUEVO)
+# ==============================================================================
+
+class Insumo(models.Model):
+    """Gestión de stock de insumos (toners, cables, repuestos)."""
+    nombre = models.CharField(max_length=100)
+    codigo = models.CharField(max_length=50, unique=True)
+    descripcion = models.TextField(blank=True, null=True)
+    
+    stock_actual = models.IntegerField(default=0)
+    stock_minimo = models.IntegerField(default=5) # Gatillo para alertas
+    
+    unidad_medida = models.CharField(max_length=20, default='Unidad') # Ej: Caja, Unidad, Litro
+    ubicacion = models.CharField(max_length=100, blank=True, null=True) # Ej: Bodega 1, Estante B
+    
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.nombre} (Stock: {self.stock_actual})"
+
+    class Meta:
+        ordering = ['nombre']
 
 

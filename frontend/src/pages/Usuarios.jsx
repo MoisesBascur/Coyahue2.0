@@ -1,30 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './Usuarios.css'; 
+import './Usuarios.css'; // Usaremos el CSS unificado
 import { useNavigate } from 'react-router-dom';
+import { PlusCircle, Search, PencilSquare } from 'react-bootstrap-icons';
 
 export const Usuarios = () => {
     const [usuarios, setUsuarios] = useState([]); 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    
-    // 1. Estado para el buscador
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Estados para Paginación
+    // Paginación
     const [nextPage, setNextPage] = useState(null);
     const [prevPage, setPrevPage] = useState(null);
     const [totalCount, setTotalCount] = useState(0);
     
     const navigate = useNavigate(); 
 
-    const fetchUsuarios = async (url = 'http://127.0.0.1:8000/api/usuarios/') => {
+    const fetchUsuarios = async (url) => {
         setLoading(true); 
         try {
             const token = localStorage.getItem('authToken');
-            if (!token) throw new Error('No estás autenticado');
+            if (!token) { navigate('/login'); return; }
 
-            const response = await axios.get(url, {
+            // URL por defecto con paginación de 10
+            const endpoint = url || 'http://127.0.0.1:8000/api/usuarios/?page_size=10';
+
+            const response = await axios.get(endpoint, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             
@@ -49,77 +51,56 @@ export const Usuarios = () => {
         fetchUsuarios();
     }, []); 
 
-    const handleEditClick = (id) => {
-        navigate(`/usuarios/${id}`);
-    };
+    const handleEditClick = (id) => navigate(`/usuarios/${id}`);
+    const handleCreateClick = () => navigate('/usuarios/nuevo');
 
-    const handleCreateClick = () => {
-        navigate('/usuarios/nuevo');
-    };
+    const formatRol = (isStaff) => isStaff ? 'Administrador' : 'Usuario Estándar';
 
-    const formatRol = (isStaff) => {
-        return isStaff ? 'Admin' : 'Usuario';
-    };
-
-    const formatEstado = (isActive) => {
-        return isActive ? (
-            <span className="estado-tag activo">Activo</span>
-        ) : (
-            <span className="estado-tag suspendido">Suspendido</span>
-        );
-    };
-
+    // Helper para fecha bonita
     const formatUltimoAcceso = (fecha) => {
         if (!fecha) return 'Nunca';
         const d = new Date(fecha);
-        return d.toLocaleString('es-CL'); 
+        return d.toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); 
     };
 
-    // 2. Lógica de filtrado
-    // Filtramos por Nombre, Apellido, Usuario, Correo o RUT
+    // Filtro local
     const usuariosFiltrados = usuarios.filter(usuario => {
         const term = searchTerm.toLowerCase();
-        
-        const nombre = (usuario.nombres || '').toLowerCase();
-        const apellido = (usuario.apellidos || '').toLowerCase();
-        const username = (usuario.username || '').toLowerCase();
-        const email = (usuario.email || '').toLowerCase();
-        const rut = (usuario.perfil?.rut || '').toLowerCase();
-        const ocupacion = (usuario.perfil?.ocupacion || '').toLowerCase();
-
-        return (
-            nombre.includes(term) ||
-            apellido.includes(term) ||
-            username.includes(term) ||
-            email.includes(term) ||
-            rut.includes(term) ||
-            ocupacion.includes(term)
-        );
+        const texto = `
+            ${usuario.nombres} ${usuario.apellidos} 
+            ${usuario.username} ${usuario.email} 
+            ${usuario.perfil?.rut || ''} ${usuario.perfil?.ocupacion || ''}
+        `.toLowerCase();
+        return texto.includes(term);
     });
 
-    if (loading) return <p className="loading-msg">Cargando usuarios...</p>;
-    if (error) return <p className="error-msg">{error}</p>;
+    if (loading) return <div className="users-loading">Cargando usuarios...</div>;
+    if (error) return <div className="users-error">{error}</div>;
 
     return (
-        <>
-            <header className="main-header">
-                <h1>Gestión de Usuarios</h1>
-                <div>
-                    {/* 3. Input conectado al estado */}
-                    <input 
-                        type="search" 
-                        placeholder="Buscar por nombre, rut, correo..." 
-                        className="main-searchbar"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <button onClick={handleCreateClick} className="create-button">
-                        Crear Usuario
+        /* CLASE CLAVE: users-isolated-scope */
+        <div className="users-page-container users-isolated-scope">
+            
+            <header className="users-header">
+                <h2>Gestión de Usuarios</h2>
+                <div className="header-actions">
+                    <div className="search-bar-container">
+                        <Search className="search-icon" />
+                        <input 
+                            type="search" 
+                            placeholder="Buscar usuario..." 
+                            className="users-search-input"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <button onClick={handleCreateClick} className="create-user-btn">
+                        <PlusCircle style={{marginRight: 6}}/> Crear Usuario
                     </button>
                 </div>
             </header>
 
-            <div className="table-container">
+            <div className="users-table-wrapper">
                 <table>
                     <thead>
                         <tr>
@@ -128,46 +109,53 @@ export const Usuarios = () => {
                             <th>Rol</th>
                             <th>Último Acceso</th>
                             <th>Estado</th>
-                            <th>Editar</th>
+                            <th className="text-center">Acción</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {/* 4. Usamos la lista filtrada para renderizar */}
                         {usuariosFiltrados.map(usuario => (
                             <tr key={usuario.id}>
-                                <td>{usuario.nombres}</td>
+                                <td style={{fontWeight: '600'}}>{usuario.nombres}</td>
                                 <td>{usuario.apellidos}</td>
-                                <td>{formatRol(usuario.rol)}</td>
-                                <td>{formatUltimoAcceso(usuario.ultimo_acceso)}</td>
-                                <td>{formatEstado(usuario.estado)}</td>
                                 <td>
-                                    <button onClick={() => handleEditClick(usuario.id)} className="action-btn">
-                                        ...
+                                    <span className={`rol-badge ${usuario.rol ? 'rol-admin' : 'rol-user'}`}>
+                                        {formatRol(usuario.rol)}
+                                    </span>
+                                </td>
+                                <td style={{fontSize:'0.9rem', color:'var(--usr-text-sec)'}}>
+                                    {formatUltimoAcceso(usuario.ultimo_acceso)}
+                                </td>
+                                <td>
+                                    <span className={`status-dot ${usuario.estado ? 'active' : 'inactive'}`}></span>
+                                    {usuario.estado ? 'Activo' : 'Suspendido'}
+                                </td>
+                                <td className="text-center">
+                                    <button onClick={() => handleEditClick(usuario.id)} className="btn-action-edit" title="Editar">
+                                        <PencilSquare />
                                     </button>
                                 </td>
                             </tr>
                         ))}
                         {usuariosFiltrados.length === 0 && (
                             <tr>
-                                <td colSpan="6" style={{textAlign: 'center', padding: '20px', color: '#777'}}>
-                                    No se encontraron usuarios.
-                                </td>
+                                <td colSpan="6" className="empty-state">No se encontraron usuarios.</td>
                             </tr>
                         )}
                     </tbody>
                 </table>
 
+                {/* --- PAGINACIÓN --- */}
                 <div className="pagination-container">
                     <button 
                         onClick={() => prevPage && fetchUsuarios(prevPage)} 
                         disabled={!prevPage}
                         className="btn-pagination"
                     >
-                        Anterior
+                        &larr; Anterior
                     </button>
                     
                     <span className="pagination-info">
-                        Mostrando {usuarios.length} usuarios
+                        Viendo {usuarios.length} de {totalCount} usuarios
                     </span>
 
                     <button 
@@ -175,10 +163,10 @@ export const Usuarios = () => {
                         disabled={!nextPage}
                         className="btn-pagination"
                     >
-                        Siguiente
+                        Siguiente &rarr;
                     </button>
                 </div>
             </div>
-        </>
+        </div>
     );
 };

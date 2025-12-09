@@ -1,0 +1,170 @@
+/* =========================================== */
+/* --- 🛠️ ESTILOS PARA EL MODAL DE TAREAS --- */
+/* =========================================== */
+
+/* 1. Overlay (Fondo oscuro) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6); 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000; 
+}
+
+/* 2. Contenedor principal del modal */
+.task-modal {
+    background: var(--bg-app); 
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 550px; 
+    max-height: 90vh; 
+    overflow-y: auto; 
+    border: 1px solid var(--border-color);
+}
+
+/* 3. Cabecera y botón de cerrar */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.5em;
+    color: var(--text-primary);
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 2.5em; 
+    cursor: pointer;
+    color: var(--text-secondary);
+    line-height: 1;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.close-modal:hover {
+    color: #ff8c00; 
+}
+
+/* 4. Estilos de formulario (inputs y labels) */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group textarea,
+.form-group input[disabled] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-sizing: border-box; 
+    font-size: 15px;
+    background-color: var(--bg-item); 
+    color: var(--text-primary);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: #ff8c00;
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
+    outline: none;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* 5. Estilo para el campo deshabilitado (Asignado a Mí) */
+.form-group input[disabled] {
+    background-color: var(--hover-color); 
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    border-style: dashed;
+}
+
+/* 6. Layout de la Cuadrícula para Fecha Límite */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 10px;
+}
+
+/* 7. Checkbox de Importante */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    accent-color: #ff8c00; 
+}
+
+.checkbox-group label {
+    margin-bottom: 0;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+/* 8. Botón de Creación */
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background-color: #1e88e5; 
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.btn-primary:hover {
+    background-color: #1565c0;
+}
+
+.btn-primary:active {
+    transform: translateY(1px);
+}
+
+.error-msg {
+    padding: 12px;
+    background-color: rgba(229, 57, 53, 0.1); 
+    color: #e53935; 
+    border: 1px solid #e53935;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}

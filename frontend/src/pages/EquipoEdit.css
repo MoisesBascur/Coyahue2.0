@@ -1,50 +1,201 @@
-.edit-form-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+/* =========================================
+   ESTILOS EXCLUSIVOS: EDITAR EQUIPO
+   ========================================= */
+
+/* 1. VARIABLES DE TEMA (Claro/Oscuro) */
+:root {
+    --ee-bg: #f4f6f8;
+    --ee-card: #ffffff;
+    --ee-input: #ffffff;
+    --ee-text: #333333;
+    --ee-text-sec: #666666;
+    --ee-border: #e0e0e0;
+    --ee-primary: #ff8c00; /* Naranja */
+    --ee-hover-primary: #e67e00;
+    --ee-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    --ee-danger-bg: rgba(231, 76, 60, 0.1);
+    --ee-danger-text: #e74c3c;
 }
 
-.edit-form-container h1 {
-    font-size: 24px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
+/* MODO OSCURO */
+body.dark, body.dark-mode {
+    --ee-bg: #121212;
+    --ee-card: #1e1e1e;
+    --ee-input: #2d2d2d;
+    --ee-text: #e0e0e0;
+    --ee-text-sec: #aaaaaa;
+    --ee-border: #333333;
+    --ee-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
 
-.form-group {
-    margin-bottom: 16px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box; /* Importante */
-}
-
-.save-button {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 4px;
-    background-color: #F57F17; /* Naranja Coyahue */
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
+/* 2. LAYOUT PRINCIPAL */
+/* Usamos las mismas clases que en el JSX (insumo-crear-container) */
+.insumo-crear-container {
+    padding: 2rem;
+    background-color: var(--ee-bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    font-family: 'Segoe UI', Roboto, sans-serif;
     transition: background-color 0.3s ease;
 }
 
-.save-button:hover {
-    background-color: #E67E22;
+.insumo-card {
+    background-color: var(--ee-card);
+    width: 100%;
+    max-width: 900px; /* Un poco más ancho para las 2 columnas */
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: var(--ee-shadow);
+    border: 1px solid var(--ee-border);
+    margin-top: 20px;
+}
+
+/* Encabezado */
+.insumo-card h2 {
+    margin: 0;
+    color: var(--ee-text);
+    font-size: 1.8rem;
+    font-weight: 700;
+    border-left: 5px solid var(--ee-primary);
+    padding-left: 15px;
+}
+
+.form-subtitle {
+    color: var(--ee-text-sec);
+    margin-top: 5px;
+    margin-bottom: 30px;
+    padding-left: 20px;
+    font-size: 0.95rem;
+}
+
+/* 3. ESTRUCTURA DEL FORMULARIO (GRILLA) */
+.perfil-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .perfil-form-grid {
+        grid-template-columns: 1fr; /* Una columna en móvil */
+        gap: 15px;
+    }
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* 4. INPUTS Y SELECTS */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    color: var(--ee-text-sec);
+}
+
+.form-group input,
+.form-group select {
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid var(--ee-border);
+    background-color: var(--ee-input);
+    color: var(--ee-text);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    box-sizing: border-box; /* Evita que el padding rompa el ancho */
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--ee-primary);
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
+}
+
+/* Animación para campos que aparecen (RAM, Procesador) */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 5. BOTONES */
+.form-actions {
+    display: flex;
+    justify-content: flex-end; /* Botones a la derecha */
+    gap: 15px;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--ee-border);
+}
+
+button {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-save {
+    background-color: var(--ee-primary);
+    color: white;
+    border: none;
+}
+
+.btn-save:hover {
+    background-color: var(--ee-hover-primary);
+    transform: translateY(-2px);
+}
+
+.btn-save:disabled {
+    background-color: var(--ee-border);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-cancel {
+    background: transparent;
+    border: 1px solid var(--ee-border);
+    color: var(--ee-text-sec);
+}
+
+.btn-cancel:hover {
+    background-color: var(--ee-input);
+    color: var(--ee-text);
+    border-color: var(--ee-text);
+}
+
+/* 6. MENSAJES */
+.alert-error {
+    background-color: var(--ee-danger-bg);
+    color: var(--ee-danger-text);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border: 1px solid var(--ee-danger-text);
+    text-align: center;
+    font-weight: 500;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: var(--ee-bg);
+    color: var(--ee-text-sec);
+    font-size: 1.2rem;
 }

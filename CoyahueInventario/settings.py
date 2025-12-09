@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'api',
+    'storages',
 ]
 
 
@@ -153,14 +154,58 @@ CORS_ALLOW_METHODS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication', 
+        'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated', 
+        'rest_framework.permissions.IsAuthenticated',
     ],
     # --- NUEVA CONFIGURACIÓN DE PAGINACIÓN ---
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 15, # <-- Aquí definimos el límite de 15 por página
 }
 
+# NOTA: Estas credenciales CAMBIAN cada vez que reinicias el Lab en Academy.
+# TendrÃ¡s que venir a actualizar este archivo cada vez que trabajes.
 
+#AWS_ACCESS_KEY_ID = ''
+#AWS_SECRET_ACCESS_KEY = ''
+#AWS_SESSION_TOKEN = ''
+
+AWS_STORAGE_BUCKET_NAME = 'coyahue-archivos' # El nombre exacto que pusiste al bucket
+AWS_S3_REGION_NAME = 'us-east-1'
+
+# Configuraciones para firmar URLs (Seguridad)
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_DEFAULT_ACL = None
+AWS_S3_VERIFY = True
+
+# Esto le dice a Django que use S3 para subir archivos
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/'
+
+# Esto evita que sobreescriba archivos con el mismo nombre
+AWS_S3_FILE_OVERWRITE = True
+
+# ===================== Nuevo ==============================
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+import os
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# 2. Le decimos a Django que use el disco duro local, NO S3
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}

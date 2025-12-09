@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom'; // 1. Importamos el hook de redi
 import axios from 'axios'; // 2. Importamos axios para llamar a la API
 import './Login.css';
 
-// 3. Usamos la ruta desde la carpeta 'public' 
-// (Asegúrate que tu logo esté en 'frontend/public/logo-coyahue.png' o ajusta la ruta)
-const logoCoyahue = '/public/slidelogo.png'; 
+// 3. Usamos la ruta desde la carpeta 'public'
+// En Vite los archivos en `public/` se sirven desde la raíz, p.ej. '/slidelogo.png'
+const logoCoyahue = '/slidelogo.png';
 
 export const Login = () => {
     const [correo, setCorreo] = useState('');
@@ -21,7 +21,7 @@ export const Login = () => {
             // 6. ¡Llamada real a la API de Django!
             // Asegúrate de que tu backend (Django) esté corriendo en el puerto 8000
             const response = await axios.post('http://127.0.0.1:8000/api/login/', {
-                correo: correo,
+                correo: correo.trim(),
                 contraseña: contraseña
             });
 
@@ -32,8 +32,7 @@ export const Login = () => {
             }
 
         } catch (err) {
-            // 8. Si la API da error (ej. 401 Unauthorized)
-            setError('Error al Iniciar Sesion. Comprueba tus datos.');
+            setError(err?.response?.data?.error || 'Error al Iniciar Sesion. Comprueba tus datos.');
         }
     };
 
@@ -47,11 +46,11 @@ export const Login = () => {
                         <h2>Log In</h2>
                         
                         <div className="form-group">
-                            <label htmlFor="correo">Correo</label>
+                            <label htmlFor="correo">Usuario o Correo</label>
                             <input 
-                                type="email" 
+                                type="text" 
                                 id="correo"
-                                placeholder="Placeholder"
+                                placeholder="usuario o correo"
                                 value={correo}
                                 onChange={(e) => setCorreo(e.target.value)}
                                 required

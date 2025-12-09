@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './Perfil.css'; 
-import './EquipoEdit.css'; // Reutilizamos estructura de formulario
+import { PersonCircle, Briefcase, Envelope, PersonVcard } from 'react-bootstrap-icons';
+import './Perfil.css'; // Importamos el nuevo CSS unificado
 
-const defaultAvatar = '/assets/default-avatar.png';
+const defaultAvatar = 'https://via.placeholder.com/150'; // O tu imagen por defecto local
 
 export const Perfil = () => {
     const navigate = useNavigate();
@@ -34,17 +34,17 @@ export const Perfil = () => {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setPerfilData(response.data);
-                setLoading(false);
             } catch (err) {
                 console.error("Error cargando el perfil", err);
-                setError('No se pudo cargar el perfil.');
+                setError('No se pudo cargar la información del perfil.');
+            } finally {
                 setLoading(false);
             }
         };
         fetchPerfil();
     }, [navigate]); 
 
-    if (loading) return <p className="loading-msg">Cargando perfil...</p>;
+    if (loading) return <div className="perfil-loading">Cargando perfil...</div>;
 
     // Lógica de foto
     let displayPicture = defaultAvatar;
@@ -54,95 +54,98 @@ export const Perfil = () => {
             : `http://127.0.0.1:8000${perfilData.perfil.foto}`;
     }
 
+    // Nombre completo seguro
+    const fullName = `${perfilData.nombres || ''} ${perfilData.apellidos || ''}`.trim() || perfilData.username;
+
     return (
-        <div className="perfil-container">
-            <header className="main-header">
-                <h1>Mi Perfil</h1>
+        /* CLASE CLAVE: perfil-isolated-scope para proteger el diseño */
+        <div className="perfil-page-container perfil-isolated-scope">
+            
+            <header className="perfil-header">
+                <h2>Mi Perfil</h2>
             </header>
             
-            {error && <p className="error-msg">{error}</p>}
+            {error && <div className="alert-error">{error}</div>}
 
-            {/* --- SECCIÓN SUPERIOR --- */}
-            <div className="perfil-header-card">
-                <div className="perfil-foto">
-                    <img src={displayPicture} alt="Foto de perfil" />
-                </div>
-                <div className="perfil-info-principal">
-                    <label>Ocupación:</label>
-                    <p>{perfilData.perfil?.ocupacion || 'No especificada'}</p>
-                </div>
-            </div>
-
-            {/* --- SECCIÓN DETALLES --- */}
-            <div className="edit-form-container section-no-top-margin">
-                <h3>Información Personal</h3>
+            <div className="perfil-content-grid">
                 
-                <div className="perfil-form-grid">
-                    <div className="form-column">
-                        <div className="form-group-readonly">
-                            <label>Nombres</label>
-                            <input type="text" value={perfilData.nombres} readOnly disabled />
-                        </div>
-                        <div className="form-group-readonly">
-                            <label>Correo Institucional </label>
-                            <input type="email" value={perfilData.username} readOnly disabled />
-                        </div>
-                        <div className="form-group-readonly">
-                            <label>RUT</label>
+                {/* --- TARJETA 1: RESUMEN (IZQUIERDA) --- */}
+                <div className="perfil-card summary-card">
+                    <div className="avatar-wrapper">
+                        <img src={displayPicture} alt="Foto de perfil" className="profile-img" />
+                    </div>
+                    <h3 className="profile-name">{fullName}</h3>
+                    <p className="profile-role">{perfilData.perfil?.ocupacion || 'Sin cargo definido'}</p>
+                    <div className="profile-status">
+                        <span className="status-badge status-active">Activo</span>
+                    </div>
+                </div>
+
+                {/* --- TARJETA 2: DETALLES (DERECHA) --- */}
+                <div className="perfil-card details-card">
+                    <div className="card-header-title">
+                        <h3>Información Personal</h3>
+                    </div>
+
+                    <div className="form-grid">
+                        <div className="form-group">
+                            <label><PersonVcard className="icon"/> RUT</label>
                             <input type="text" value={perfilData.perfil?.rut || ''} readOnly disabled />
                         </div>
-                    </div>
-                    <div className="form-column">
-                        <div className="form-group-readonly">
-                            <label>Apellidos</label>
-                            <input type="text" value={perfilData.apellidos} readOnly disabled />
-                        </div>
-                        <div className="form-group-readonly">
-                            <label>Email (Contacto)</label>
+                        <div className="form-group">
+                            <label><Envelope className="icon"/> Correo Electrónico</label>
                             <input type="email" value={perfilData.email} readOnly disabled />
                         </div>
-                        <div className="form-group-readonly">
-                            <label>Área</label>
+                        <div className="form-group">
+                            <label><Briefcase className="icon"/> Área / Departamento</label>
                             <input type="text" value={perfilData.perfil?.area || ''} readOnly disabled />
+                        </div>
+                        <div className="form-group">
+                            <label><PersonCircle className="icon"/> Usuario de Sistema</label>
+                            <input type="text" value={perfilData.username} readOnly disabled />
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* --- SECCIÓN MIS EQUIPOS --- */}
-            <div className="edit-form-container section-spaced">
-                <h3>Mis Equipos Asignados ({perfilData.equipos_asignados?.length || 0})</h3>
-                
-                {perfilData.equipos_asignados && perfilData.equipos_asignados.length > 0 ? (
-                    <div className="equipos-table-wrapper">
-                        <table className="equipos-table">
-                            <thead>
-                                <tr>
-                                    <th>Tipo</th>
-                                    <th>Marca / Modelo</th>
-                                    <th>Serie</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {perfilData.equipos_asignados.map(eq => (
-                                    <tr key={eq.id}>
-                                        <td>{eq.tipo}</td>
-                                        <td>{eq.marca} {eq.modelo}</td>
-                                        <td>{eq.nro_serie}</td>
-                                        <td>
-                                            <span className={`status-badge ${eq.estado === 'Activo' ? 'status-active' : 'status-inactive'}`}>
-                                                {eq.estado}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                {/* --- TARJETA 3: MIS EQUIPOS (ABAJO) --- */}
+                <div className="perfil-card full-width-card">
+                    <div className="card-header-title">
+                        <h3>Mis Equipos Asignados ({perfilData.equipos_asignados?.length || 0})</h3>
                     </div>
-                ) : (
-                    <p className="empty-msg">No tienes equipos asignados actualmente.</p>
-                )}
+                    
+                    <div className="table-wrapper">
+                        {perfilData.equipos_asignados && perfilData.equipos_asignados.length > 0 ? (
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Serie</th>
+                                        <th>Marca / Modelo</th>
+                                        <th>Tipo</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {perfilData.equipos_asignados.map(eq => (
+                                        <tr key={eq.id}>
+                                            <td className="font-mono">{eq.nro_serie}</td>
+                                            <td><strong>{eq.marca}</strong> {eq.modelo}</td>
+                                            <td>{eq.tipo || 'Equipo'}</td>
+                                            <td>
+                                                <span className={`status-badge ${
+                                                    eq.estado === 'Activo' ? 'status-active' : 'status-inactive'
+                                                }`}>
+                                                    {eq.estado || 'Asignado'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div className="empty-state">No tienes equipos asignados actualmente.</div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );
