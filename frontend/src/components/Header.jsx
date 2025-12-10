@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, BellFill, XCircle } from 'react-bootstrap-icons';
-import axios from 'axios';
+import api from '../api';
 import './Header.css';
 
 const Header = ({ user }) => {
@@ -33,7 +33,7 @@ const Header = ({ user }) => {
 
         try {
             // Asumimos que las notificaciones viven en 'Actividades' o tienes un endpoint específico
-            const response = await axios.get('http://127.0.0.1:8000/api/actividades/', {
+            const response = await api.get('/api/actividades/', {
                 headers: { 'Authorization': `Token ${token}` }
             });
 
@@ -67,7 +67,8 @@ const Header = ({ user }) => {
 
     // Foto de perfil
     const profileImage = user?.perfil?.foto_perfil 
-        ? (user.perfil.foto_perfil.startsWith('http') ? user.perfil.foto_perfil : `http://127.0.0.1:8000${user.perfil.foto_perfil}`)
+        ? (user.perfil.foto_perfil.startsWith('http') ? user.perfil.foto_perfil 
+        : user.perfil.foto_perfil)
         : '/assets/default-avatar.png'; 
 
     const unreadCount = notifications.length; // O puedes filtrar por un campo 'leida' si lo tienes

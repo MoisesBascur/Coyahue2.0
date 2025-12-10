@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useNavigate } from 'react-router-dom';
 import { QrCode, Eye, PencilSquare, PlusCircle, Search } from 'react-bootstrap-icons';
 import QRGeneratorModal from '../components/QRGeneratorModal';
 import './Inventario.css';
 
 // URL Base
-const BASE_URL = 'http://127.0.0.1:8000/api/equipos/';
+const BASE_URL = '/api/equipos/';
 
 export const Inventario = () => {
     const [equipos, setEquipos] = useState([]);
@@ -29,7 +29,7 @@ export const Inventario = () => {
     const getFileUrl = (url) => {
         if (!url) return '';
         if (url.startsWith('http')) return url;
-        return `http://127.0.0.1:8000${url}`;
+        return url; 
     };
 
     // Helper de Colores
@@ -52,7 +52,7 @@ export const Inventario = () => {
             // AQUÍ ESTÁ EL CAMBIO: page_size=10
             const endpoint = url || `${BASE_URL}?page_size=10&ordering=-id`;
 
-            const response = await axios.get(endpoint, {
+            const response = await api.get(endpoint, {
                 headers: { 'Authorization': `Token ${token}` }
             });
 

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useNavigate } from 'react-router-dom';
 import { PlusCircle, Search, Trash, PencilSquare } from 'react-bootstrap-icons';
 import './Insumos.css';
 
 // URL base de tu backend
-const API_URL = 'http://127.0.0.1:8000/api'; 
+const API_URL = '/api'; 
 
 export const Insumos = () => {
     const [insumos, setInsumos] = useState([]);
@@ -25,7 +25,7 @@ export const Insumos = () => {
                 return; 
             }
             try {
-                const response = await axios.get(`${API_URL}/insumos/`, { 
+                const response = await api.get(`${API_URL}/insumos/`, { 
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setInsumos(response.data.results || response.data); 

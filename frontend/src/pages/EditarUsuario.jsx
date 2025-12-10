@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import './InsumosCrear.css'; // Usamos el CSS unificado para mantener el diseño
 
 export const EditarUsuario = () => {
@@ -33,7 +33,7 @@ export const EditarUsuario = () => {
         const fetchUsuario = async () => {
             const token = localStorage.getItem('authToken');
             try {
-                const response = await axios.get(`http://127.0.0.1:8000/api/usuarios/${id}/`, {
+                const response = await api.get(`/api/usuarios/${id}/`, {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 const data = response.data;
@@ -99,7 +99,7 @@ export const EditarUsuario = () => {
         }
 
         try {
-            await axios.patch(`http://127.0.0.1:8000/api/usuarios/${id}/`, dataToSend, {
+            await api.patch(`/api/usuarios/${id}/`, dataToSend, {
                 headers: { 
                     'Authorization': `Token ${token}`,
                     'Content-Type': 'multipart/form-data'

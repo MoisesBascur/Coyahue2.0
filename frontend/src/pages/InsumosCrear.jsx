@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useNavigate } from 'react-router-dom';
 import './InsumosCrear.css';
 
@@ -29,7 +29,7 @@ export const InsumoCrear = () => {
         
         const token = localStorage.getItem('authToken');
         try {
-            await axios.post('http://127.0.0.1:8000/api/insumos/', formData, {
+            await api.post('/api/insumos/', formData, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             navigate('/insumos'); // Volver a la lista

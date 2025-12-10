@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import './InsumosCrear.css'; // Usamos el CSS Unificado para coherencia visual
 
 export const EquipoEdit = () => {
@@ -38,12 +38,12 @@ export const EquipoEdit = () => {
             try {
                 // Carga paralela de listas y equipo
                 const [resTipos, resEstados, resProv, resUsers, resSuc, resEquipo] = await Promise.all([
-                    axios.get('http://127.0.0.1:8000/api/tipos-equipo/', { headers: { 'Authorization': `Token ${token}` } }),
-                    axios.get('http://127.0.0.1:8000/api/estados/', { headers: { 'Authorization': `Token ${token}` } }),
-                    axios.get('http://127.0.0.1:8000/api/proveedores/', { headers: { 'Authorization': `Token ${token}` } }),
-                    axios.get('http://127.0.0.1:8000/api/usuarios/', { headers: { 'Authorization': `Token ${token}` } }),
-                    axios.get('http://127.0.0.1:8000/api/sucursales/', { headers: { 'Authorization': `Token ${token}` } }),
-                    axios.get(`http://127.0.0.1:8000/api/equipos/${id}/`, { headers: { 'Authorization': `Token ${token}` } })
+                    api.get('/api/tipos-equipo/', { headers: { 'Authorization': `Token ${token}` } }),
+                    api.get('/api/estados/', { headers: { 'Authorization': `Token ${token}` } }),
+                    api.get('/api/proveedores/', { headers: { 'Authorization': `Token ${token}` } }),
+                    api.get('/api/usuarios/', { headers: { 'Authorization': `Token ${token}` } }),
+                    api.get('/api/sucursales/', { headers: { 'Authorization': `Token ${token}` } }),
+                    api.get(`/api/equipos/${id}/`, { headers: { 'Authorization': `Token ${token}` } })
                 ]);
 
                 setTipos(getData(resTipos));
@@ -113,7 +113,7 @@ export const EquipoEdit = () => {
         });
 
         try {
-            await axios.patch(`http://127.0.0.1:8000/api/equipos/${id}/`, dataToSend, {
+            await api.patch(`/api/equipos/${id}/`, dataToSend, {
                 headers: { 
                     'Authorization': `Token ${token}`,
                     'Content-Type': 'multipart/form-data'

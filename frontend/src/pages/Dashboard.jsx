@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { ExclamationTriangleFill } from 'react-bootstrap-icons'; 
@@ -48,8 +48,8 @@ export const Dashboard = () => {
 
             try {
                 const [dashboardRes, insumosRes] = await Promise.allSettled([
-                    axios.get('http://127.0.0.1:8000/api/dashboard/', config),
-                    axios.get('http://127.0.0.1:8000/api/insumos/', config)
+                    api.get('/api/dashboard/', config),
+                    api.get('/api/insumos/', config)
                 ]);
 
                 if (dashboardRes.status !== 'fulfilled') {

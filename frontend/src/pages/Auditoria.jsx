@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useNavigate } from 'react-router-dom';
 import { ClockHistory, Person, Activity, Database, FileText } from 'react-bootstrap-icons';
 import './Auditoria.css'; // Importamos el nuevo diseño unificado
@@ -23,9 +23,9 @@ export const Auditoria = () => {
 
         try {
             // URL base con paginación de 10 si es la primera carga
-            const endpoint = url || 'http://127.0.0.1:8000/api/auditoria/?page_size=10';
+            const endpoint = url || '/api/auditoria/?page_size=10';
 
-            const response = await axios.get(endpoint, {
+            const response = await api.get(endpoint, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             

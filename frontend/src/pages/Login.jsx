@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // 1. Importamos el hook de redirección
-import axios from 'axios'; // 2. Importamos axios para llamar a la API
+import api from '../api'; // 2. Importamos axios para llamar a la API
 import './Login.css';
 
 // 3. Usamos la ruta desde la carpeta 'public'
@@ -20,7 +20,7 @@ export const Login = () => {
         try {
             // 6. ¡Llamada real a la API de Django!
             // Asegúrate de que tu backend (Django) esté corriendo en el puerto 8000
-            const response = await axios.post('http://127.0.0.1:8000/api/login/', {
+            const response = await api.post('/api/login/', {
                 correo: correo.trim(),
                 contraseña: contraseña
             });

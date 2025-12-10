@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import './CrearUsuario.css'; // ¡REUTILIZAMOS EL CSS PROFESIONAL!
 
 export const CrearUsuario = () => {
@@ -69,7 +69,7 @@ export const CrearUsuario = () => {
         }
 
         try {
-            await axios.post('http://127.0.0.1:8000/api/usuarios/', dataToSend, {
+            await api.post('/api/usuarios/', dataToSend, {
                 headers: { 'Authorization': `Token ${token}`, 'Content-Type': 'multipart/form-data' }
             });
             navigate('/usuarios');

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import { ArrowLeft, Person, Cpu, GeoAlt, FileEarmarkText } from 'react-bootstrap-icons';
 import './EquipoDetalle.css'; 
 
@@ -15,7 +15,7 @@ export const EquipoDetalle = () => {
         const fetchEquipo = async () => {
             const token = localStorage.getItem('authToken');
             try {
-                const response = await axios.get(`http://127.0.0.1:8000/api/equipos/${id}/`, {
+                const response = await api.get(`/api/equipos/${id}/`, {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setEquipo(response.data);

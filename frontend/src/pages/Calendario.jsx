@@ -5,7 +5,7 @@ import parse from 'date-fns/parse';
 import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
 import es from 'date-fns/locale/es';
-import axios from 'axios';
+import api from '../api';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './Calendario.css'; // Usaremos el nuevo CSS
 
@@ -27,10 +27,10 @@ export const Calendario = () => {
             const token = localStorage.getItem('authToken');
             try {
                 const results = await Promise.allSettled([
-                    axios.get('http://127.0.0.1:8000/api/reservas/', { headers: { 'Authorization': `Token ${token}` } }),
-                    axios.get('http://127.0.0.1:8000/api/tareas/', { headers: { 'Authorization': `Token ${token}` } }),
-                    axios.get('http://127.0.0.1:8000/api/actividades/', { headers: { 'Authorization': `Token ${token}` } }),
-                    axios.get('http://127.0.0.1:8000/api/equipos/?page_size=1000', { headers: { 'Authorization': `Token ${token}` } }),
+                    api.get('/api/reservas/', { headers: { 'Authorization': `Token ${token}` } }),
+                    api.get('/api/tareas/', { headers: { 'Authorization': `Token ${token}` } }),
+                    api.get('/api/actividades/', { headers: { 'Authorization': `Token ${token}` } }),
+                    api.get('/api/equipos/?page_size=1000', { headers: { 'Authorization': `Token ${token}` } }),
                 ]);
 
                 const normalize = (resp) => Array.isArray(resp.data) ? resp.data : (Array.isArray(resp.data?.results) ? resp.data.results : []);

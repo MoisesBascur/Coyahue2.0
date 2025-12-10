@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useOutletContext } from 'react-router-dom'; 
 import { PlusCircle, CheckCircleFill, Clock, Person, ExclamationCircle, CheckCircle } from 'react-bootstrap-icons'; 
 import format from 'date-fns/format';
@@ -44,7 +44,7 @@ const CreateTaskModal = ({ isVisible, onClose, onCreate, currentUser }) => {
         };
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/tareas/create/', dataToSend, {
+            const response = await api.post('/api/tareas/create/', dataToSend, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             onCreate(response.data); 
@@ -133,8 +133,8 @@ export const Menu = () => {
         const fetchData = async () => {
             try {
                 const results = await Promise.allSettled([
-                    axios.get('http://127.0.0.1:8000/api/tareas/', config),
-                    axios.get('http://127.0.0.1:8000/api/usuarios/', config),
+                    api.get('/api/tareas/', config),
+                    api.get('/api/usuarios/', config),
                 ]);
 
                 if (results[0].status === 'fulfilled') setTasks(normalizeData(results[0].value));
@@ -152,7 +152,7 @@ export const Menu = () => {
     const handleCompleteTask = async (taskId) => {
         const token = localStorage.getItem('authToken');
         try {
-            const response = await axios.patch(`http://127.0.0.1:8000/api/tareas/${taskId}/complete/`, {}, {
+            const response = await api.patch(`/api/tareas/${taskId}/complete/`, {}, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             setTasks(prev => prev.map(t => t.id === taskId ? response.data : t));

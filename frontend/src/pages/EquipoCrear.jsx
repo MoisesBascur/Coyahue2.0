@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import './InsumosCrear.css'; // Usamos el CSS Unificado para coherencia visual
 
 export const EquipoCrear = () => {
@@ -40,11 +40,11 @@ export const EquipoCrear = () => {
             const token = localStorage.getItem('authToken');
             try {
                 const [resTipos, resEstados, resProv, resUsers, resSuc] = await Promise.all([
-                    axios.get('http://127.0.0.1:8000/api/tipos-equipo/', { headers: { 'Authorization': `Token ${token}` } }),
-                    axios.get('http://127.0.0.1:8000/api/estados/', { headers: { 'Authorization': `Token ${token}` } }),
-                    axios.get('http://127.0.0.1:8000/api/proveedores/', { headers: { 'Authorization': `Token ${token}` } }),
-                    axios.get('http://127.0.0.1:8000/api/usuarios/', { headers: { 'Authorization': `Token ${token}` } }),
-                    axios.get('http://127.0.0.1:8000/api/sucursales/', { headers: { 'Authorization': `Token ${token}` } })
+                    api.get('/api/tipos-equipo/', { headers: { 'Authorization': `Token ${token}` } }),
+                    api.get('/api/estados/', { headers: { 'Authorization': `Token ${token}` } }),
+                    api.get('/api/proveedores/', { headers: { 'Authorization': `Token ${token}` } }),
+                    api.get('/api/usuarios/', { headers: { 'Authorization': `Token ${token}` } }),
+                    api.get('/api/sucursales/', { headers: { 'Authorization': `Token ${token}` } })
                 ]);
 
                 setTipos(getData(resTipos));
@@ -123,7 +123,7 @@ export const EquipoCrear = () => {
         }
 
         try {
-            await axios.post('http://127.0.0.1:8000/api/equipos/', dataToSend, {
+            await api.post('/api/equipos/', dataToSend, {
                 headers: { 
                     'Authorization': `Token ${token}`,
                     'Content-Type': 'multipart/form-data' 

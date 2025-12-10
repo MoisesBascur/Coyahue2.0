@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import axios from 'axios'; 
+import api from '../api'; 
 import { useTheme } from '../ThemeContext'; // Ajusta si tu ThemeContext está en otra carpeta
 import './Sidebar.css'; 
 
@@ -29,7 +29,7 @@ export const Sidebar = ({ user }) => {
             if (!token) return;
 
             try {
-                const response = await axios.get('http://127.0.0.1:8000/api/notificaciones/', {
+                const response = await api.get('/api/notificaciones/', {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 
@@ -70,7 +70,8 @@ export const Sidebar = ({ user }) => {
     const esAdmin = user?.es_admin === true;
 
     const userPhotoUrl = user?.perfil?.foto 
-        ? (user.perfil.foto.startsWith('http') ? user.perfil.foto : `http://127.0.0.1:8000${user.perfil.foto}`)
+        ? (user.perfil.foto.startsWith('http') ? user.perfil.foto 
+        : user.perfil.foto)
         : null;
 
     return (

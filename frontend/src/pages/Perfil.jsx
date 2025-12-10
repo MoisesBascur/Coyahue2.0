@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import { PersonCircle, Briefcase, Envelope, PersonVcard } from 'react-bootstrap-icons';
 import './Perfil.css'; // Importamos el nuevo CSS unificado
 
@@ -30,7 +30,7 @@ export const Perfil = () => {
             }
             
             try {
-                const response = await axios.get('http://127.0.0.1:8000/api/perfil/', {
+                const response = await api.get('/api/perfil/', {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setPerfilData(response.data);
@@ -51,7 +51,7 @@ export const Perfil = () => {
     if (perfilData.perfil?.foto) {
         displayPicture = perfilData.perfil.foto.startsWith('http') 
             ? perfilData.perfil.foto 
-            : `http://127.0.0.1:8000${perfilData.perfil.foto}`;
+            : perfilData.perfil.foto;
     }
 
     // Nombre completo seguro

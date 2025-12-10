@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useNavigate, useParams } from 'react-router-dom';
 import './InsumosEdit.css';
 
@@ -26,7 +26,7 @@ export const InsumoEdit = () => {
         const fetchInsumo = async () => {
             const token = localStorage.getItem('authToken');
             try {
-                const response = await axios.get(`http://127.0.0.1:8000/api/insumos/${id}/`, {
+                const response = await api.get(`/api/insumos/${id}/`, {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setFormData(response.data);
@@ -52,7 +52,7 @@ export const InsumoEdit = () => {
         const token = localStorage.getItem('authToken');
         try {
             // Usamos PUT para actualizar el recurso completo
-            await axios.put(`http://127.0.0.1:8000/api/insumos/${id}/`, formData, {
+            await api.put(`/api/insumos/${id}/`, formData, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             navigate('/insumos'); // Volver al listado
