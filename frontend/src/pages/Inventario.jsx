@@ -122,12 +122,6 @@ export const Inventario = () => {
                             className="inventario-search-input"
                         />
                     </div>
-                    
-                    {/* --- BOTÓN AHORA REDIRIGE A LA PÁGINA BULK IMPORT --- */}
-                    <button onClick={() => navigate('/inventario/bulk')} className="create-btn bulk-btn" style={{backgroundColor: '#17a2b8', minWidth: '150px'}}>
-                        <BoxArrowInDown style={{marginRight: 8}}/> Carga Masiva
-                    </button>
-                    {/* ----------------------------------- */}
 
                     <button onClick={() => navigate('/inventario/nuevo')} className="create-btn">
                         <PlusCircle style={{marginRight: 8}}/> Nuevo Equipo
