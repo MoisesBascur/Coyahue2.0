@@ -15,7 +15,7 @@ import { Auditoria } from './pages/Auditoria';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { EquipoDetalle } from './pages/EquipoDetalle';
 import { ThemeProvider } from './ThemeContext';
-import { BulkImportPage } from './pages/BulkImportPage'; 
+import { BulkImportPage } from './pages/RENIEX'; 
 
 // IMPORTACIÓN DE COMPONENTES DE INSUMOS
 import { Insumos } from './pages/Insumos';
