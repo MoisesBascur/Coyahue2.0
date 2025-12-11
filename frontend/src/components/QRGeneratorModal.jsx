@@ -10,7 +10,7 @@ const QRGeneratorModal = ({ show, onClose, equipment }) => {
     const dataParaQR = `${baseUrl}/inventario/ficha/${equipment.id}?layout=qr`;
     
     // API para generar imagen QR
-    const qrImageUrl = `https://https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(dataParaQR)}`;
+    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(dataParaQR)}`;
 
     // 2. FUNCIÓN DE DESCARGA
     const downloadQR = async () => {
