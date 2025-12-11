@@ -56,28 +56,32 @@ export const BulkImportPage = () => {
 
     // Función para cargar los datos de los selects
     const fetchSelectData = useCallback(async () => {
-        setLoading(true);
-        const config = { headers: { 'Authorization': `Token ${token}` } };
-        
-        const endpoints = [
-            { url: 'proveedores/', setter: setProveedores },
-            { url: 'tipos-equipo/', setter: setTipos },
-            { url: 'estados/', setter: setEstados },
-            { url: 'sucursales/', setter: setSucursales },
-        ];
+        setLoading(true);
+        // BORRAMOS el 'config' manual, api.js ya pone el token solito.
+        
+        const endpoints = [
+            { url: 'proveedores/', setter: setProveedores },
+            { url: 'tipos-equipo/', setter: setTipos },
+            { url: 'estados/', setter: setEstados },
+            { url: 'sucursales/', setter: setSucursales },
+        ];
 
-        try {
-            await Promise.all(endpoints.map(async ({ url, setter }) => {
-                const res = await axios.get(`${BASE_URL}${url}`, config);
-                setter(res.data.results || res.data); 
-            }));
-        } catch (err) {
-            console.error("Error cargando selects:", err);
-            setError("No se pudieron cargar los datos base (proveedores, tipos, etc.).");
-        } finally {
-            setLoading(false);
-        }
-    }, [token]);
+        try {
+            await Promise.all(endpoints.map(async ({ url, setter }) => {
+                // CORRECCIÓN AQUÍ:
+                // 1. Usamos 'api' en lugar de 'axios'
+                // 2. Quitamos 'config' (el token va automático)
+                const res = await api.get(`${BASE_URL}${url}`);
+                
+                setter(res.data.results || res.data); 
+            }));
+        } catch (err) {
+            console.error("Error cargando selects:", err);
+            setError("No se pudieron cargar los datos base (proveedores, tipos, etc.).");
+        } finally {
+            setLoading(false);
+        }
+    }, []); // Quitamos [token] de las dependencias porque api.js lo maneja internamente
 
     useEffect(() => {
         if (!token) {
