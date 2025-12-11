@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api';
 import { useNavigate } from 'react-router-dom';
-import { QrCode, Eye, PencilSquare, PlusCircle, Search } from 'react-bootstrap-icons';
+// Importamos el ícono para Carga Masiva
+import { QrCode, Eye, PencilSquare, PlusCircle, Search, BoxArrowInDown } from 'react-bootstrap-icons'; 
 import QRGeneratorModal from '../components/QRGeneratorModal';
+// Ya no necesitamos importar BulkImportModal aquí
 import './Inventario.css';
 
 // URL Base
@@ -12,6 +14,8 @@ export const Inventario = () => {
     const [equipos, setEquipos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    
+    // ESTADOS DE FILTRO
     const [searchTerm, setSearchTerm] = useState('');
     
     // Estados de Paginación
@@ -22,15 +26,20 @@ export const Inventario = () => {
     // Modales
     const [infoCardData, setInfoCardData] = useState(null);
     const [qrEquipment, setQrEquipment] = useState(null);
+    // Ya no necesitamos showBulkModal
     
     const navigate = useNavigate();
 
     // Helper para URLs
     const getFileUrl = (url) => {
-        if (!url) return '';
-        if (url.startsWith('http')) return url;
-        return url; 
-    };
+    if (!url) return '';
+    // Si ya viene completa (S3), se usa tal cual
+    if (url.startsWith('http')) return url;
+    
+    // Si es relativa, devolvemos solo la ruta (/media/...)
+    // El navegador sabrá buscarla en el servidor correcto.
+    return url; 
+};
 
     // Helper de Colores
     const getStatusClass = (nombreEstado) => {
@@ -43,26 +52,38 @@ export const Inventario = () => {
     };
 
     // --- FUNCIÓN DE CARGA ---
-    const fetchEquipos = async (url) => {
+    const fetchEquipos = useCallback(async (url) => {
         setLoading(true);
+        setError('');
+
         try {
             const token = localStorage.getItem('authToken');
             if (!token) { navigate('/login'); return; }
 
-            // AQUÍ ESTÁ EL CAMBIO: page_size=10
-            const endpoint = url || `${BASE_URL}?page_size=10&ordering=-id`;
+            const params = new URLSearchParams();
+            params.append('page_size', 10);
+            params.append('ordering', '-id');
+
+            // CLAVE: ENVIAR EL SEARCH TERM AL SERVIDOR
+            if (searchTerm) params.append('search', searchTerm);
+
+            const endpoint = url || `${BASE_URL}?${params.toString()}`;
 
             const response = await api.get(endpoint, {
                 headers: { 'Authorization': `Token ${token}` }
             });
 
+            // Manejamos la respuesta paginada o no paginada
             if (response.data.results) {
                 setEquipos(response.data.results);
-                setNextPage(response.data.next);      
+                setNextPage(response.data.next);      
                 setPrevPage(response.data.previous); 
                 setTotalCount(response.data.count);
             } else {
                 setEquipos(response.data);
+                setTotalCount(response.data.length || 0);
+                setNextPage(null);      
+                setPrevPage(null); 
             }
         } catch (err) {
             console.error("Error cargando inventario:", err);
@@ -70,47 +91,44 @@ export const Inventario = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [navigate, searchTerm]); 
 
+    // --- EFECTO: Recargar equipos cuando el searchTerm cambia ---
     useEffect(() => {
-        fetchEquipos();
-    }, []);
+        // Reiniciamos la paginación al cambiar la búsqueda
+        fetchEquipos(null); 
+    }, [searchTerm, fetchEquipos]); 
 
-    // Botones de Paginación (Usan la URL que devuelve el backend)
+    // Botones de Paginación 
     const handleNext = () => { if (nextPage) fetchEquipos(nextPage); };
     const handlePrev = () => { if (prevPage) fetchEquipos(prevPage); };
 
-    // Filtro Local
-    const equiposFiltrados = equipos.filter(eq => {
-        const term = searchTerm.toLowerCase();
-        const texto = `
-            ${eq.marca} ${eq.modelo} ${eq.nro_serie} 
-            ${eq.rut_asociado} 
-            ${eq.id_usuario_responsable?.username || ''} 
-            ${eq.id_sucursal?.nombre || ''}
-        `.toLowerCase();
-        return texto.includes(term);
-    });
-
-    if (loading) return <div className="loading-container"><p className="loading-msg">Cargando...</p></div>;
+    if (loading && equipos.length === 0) return <div className="loading-container"><p className="loading-msg">Cargando...</p></div>;
     if (error) return <div className="error-msg">{error}</div>;
 
     return (
         <div className="inventario-page-container inventario-isolated-scope">
             
             <header className="inventario-header">
-                <h2>Inventario de Equipos</h2>
+                <h2>Inventario de Equipos </h2>
                 <div className="header-actions">
                     <div className="search-bar-container">
                         <Search className="search-icon" />
                         <input 
                             type="search" 
-                            placeholder="Buscar en esta página..." 
+                            placeholder="Buscar por Marca, Serie, Tipo o Estado..." 
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => setSearchTerm(e.target.value)} 
                             className="inventario-search-input"
                         />
                     </div>
+                    
+                    {/* --- BOTÓN AHORA REDIRIGE A LA PÁGINA BULK IMPORT --- */}
+                    <button onClick={() => navigate('/inventario/bulk')} className="create-btn bulk-btn" style={{backgroundColor: '#17a2b8', minWidth: '150px'}}>
+                        <BoxArrowInDown style={{marginRight: 8}}/> Carga Masiva
+                    </button>
+                    {/* ----------------------------------- */}
+
                     <button onClick={() => navigate('/inventario/nuevo')} className="create-btn">
                         <PlusCircle style={{marginRight: 8}}/> Nuevo Equipo
                     </button>
@@ -133,7 +151,7 @@ export const Inventario = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {equiposFiltrados.map(eq => (
+                        {equipos.map(eq => ( 
                             <tr key={eq.id}>
                                 <td>{eq.id_usuario_responsable?.username || <span className="text-muted">N/A</span>}</td>
                                 <td>{eq.rut_asociado || '-'}</td>
@@ -153,7 +171,8 @@ export const Inventario = () => {
                                     </button>
                                 </td>
                                 <td className="text-center">
-                                    <button className="btn-icon" onClick={() => setInfoCardData(infoCardData?.id === eq.id ? null : eq)} title="Detalles">
+                                    {/* Ruta del detalle */}
+                                    <button className="btn-icon" onClick={() => navigate(`/inventario/ficha/${eq.id}`)} title="Detalles">
                                         <Eye size={18} />
                                     </button>
                                 </td>
@@ -164,7 +183,7 @@ export const Inventario = () => {
                                 </td>
                             </tr>
                         ))}
-                        {equiposFiltrados.length === 0 && (
+                        {equipos.length === 0 && !loading && (
                             <tr><td colSpan="9" className="empty-state">No se encontraron equipos.</td></tr>
                         )}
                     </tbody>
@@ -222,6 +241,9 @@ export const Inventario = () => {
                 onClose={() => setQrEquipment(null)} 
                 equipment={qrEquipment} 
             />
+
+            {/* El modal de carga masiva ha sido reemplazado por la página /inventario/bulk */}
+
         </div>
     );
 };

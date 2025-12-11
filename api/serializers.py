@@ -16,47 +16,35 @@ class ProveedorSerializer(serializers.ModelSerializer):
     class Meta: model = Proveedores; fields = ['id', 'nombre_proveedor']
 class SucursalSerializer(serializers.ModelSerializer):
     class Meta: model = Sucursal; fields = ['id', 'nombre', 'direccion']
+    
+# --- CORRECCIÓN CLAVE: Incluimos Garantía y Factura en el Serializador Simple ---
 class EquipoSimpleSerializer(serializers.ModelSerializer):
-    class Meta: model = Equipos; fields = ['id', 'marca', 'modelo', 'nro_serie']
+    class Meta: 
+        model = Equipos
+        # Incluimos 'warranty_end_date' y 'factura' para que estén disponibles en Reservas y Calendario.
+        fields = ['id', 'marca', 'modelo', 'nro_serie', 'factura', 'warranty_end_date'] 
 
 # --- Serializer de Equipos ---
 class EquipoSerializer(serializers.ModelSerializer):
+    # Serializers anidados para Read
     id_tipo_equipo = TipoEquipoSerializer(read_only=True, allow_null=True)
     id_estado = EstadoSerializer(read_only=True, allow_null=True)
     id_proveedor = ProveedorSerializer(read_only=True, allow_null=True)
     id_usuario_responsable = UsuarioSerializer(read_only=True, allow_null=True) 
     id_sucursal = SucursalSerializer(read_only=True, allow_null=True)
     
+    # PrimaryKey fields para Write
     tipo_id = serializers.PrimaryKeyRelatedField(queryset=TiposDeEquipo.objects.all(), source='id_tipo_equipo', write_only=True)
     estado_id = serializers.PrimaryKeyRelatedField(queryset=Estados.objects.all(), source='id_estado', write_only=True)
     proveedor_id = serializers.PrimaryKeyRelatedField(queryset=Proveedores.objects.all(), source='id_proveedor', write_only=True, allow_null=True, required=False)
     usuario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), source='id_usuario_responsable', write_only=True, allow_null=True, required=False)
     sucursal_id = serializers.PrimaryKeyRelatedField(queryset=Sucursal.objects.all(), source='id_sucursal', write_only=True, allow_null=True, required=False)
     sucursal_nombre = serializers.CharField(write_only=True, required=False, allow_blank=True)
-    factura = serializers.FileField(required=False, allow_null=True)
+    factura = serializers.FileField(required=False, allow_null=True) 
 
     class Meta:
         model = Equipos
-        fields = ['id', 'nro_serie', 'marca', 'modelo', 'fecha_compra', 'warranty_end_date', 'rut_asociado', 'procesador', 'ram', 'almacenamiento', 'factura', 'id_tipo_equipo', 'id_estado', 'id_proveedor', 'id_usuario_responsable', 'id_sucursal', 'tipo_id', 'estado_id', 'proveedor_id', 'usuario_id', 'sucursal_id', 'sucursal_nombre']
-
-# --- Serializer de Equipos ---
-class EquipoSerializer(serializers.ModelSerializer):
-    id_tipo_equipo = TipoEquipoSerializer(read_only=True, allow_null=True)
-    id_estado = EstadoSerializer(read_only=True, allow_null=True)
-    id_proveedor = ProveedorSerializer(read_only=True, allow_null=True)
-    id_usuario_responsable = UsuarioSerializer(read_only=True, allow_null=True) 
-    id_sucursal = SucursalSerializer(read_only=True, allow_null=True)
-    
-    tipo_id = serializers.PrimaryKeyRelatedField(queryset=TiposDeEquipo.objects.all(), source='id_tipo_equipo', write_only=True)
-    estado_id = serializers.PrimaryKeyRelatedField(queryset=Estados.objects.all(), source='id_estado', write_only=True)
-    proveedor_id = serializers.PrimaryKeyRelatedField(queryset=Proveedores.objects.all(), source='id_proveedor', write_only=True, allow_null=True, required=False)
-    usuario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), source='id_usuario_responsable', write_only=True, allow_null=True, required=False)
-    sucursal_id = serializers.PrimaryKeyRelatedField(queryset=Sucursal.objects.all(), source='id_sucursal', write_only=True, allow_null=True, required=False)
-    sucursal_nombre = serializers.CharField(write_only=True, required=False, allow_blank=True)
-    factura = serializers.FileField(required=False, allow_null=True)
-
-    class Meta:
-        model = Equipos
+        # Aseguramos que 'warranty_end_date' y 'factura' están en los campos principales
         fields = ['id', 'nro_serie', 'marca', 'modelo', 'fecha_compra', 'warranty_end_date', 'rut_asociado', 'procesador', 'ram', 'almacenamiento', 'factura', 'id_tipo_equipo', 'id_estado', 'id_proveedor', 'id_usuario_responsable', 'id_sucursal', 'tipo_id', 'estado_id', 'proveedor_id', 'usuario_id', 'sucursal_id', 'sucursal_nombre']
 
     def create(self, validated_data):
@@ -164,7 +152,8 @@ class UserManagementSerializer(serializers.ModelSerializer):
 
 # --- Serializer de Reservas ---
 class ReservaSerializer(serializers.ModelSerializer):
-    equipo_data = EquipoSimpleSerializer(source='equipo', read_only=True)
+    # Ahora equipo_data incluye garantía y factura para el calendario
+    equipo_data = EquipoSimpleSerializer(source='equipo', read_only=True) 
     usuario_data = UsuarioSerializer(source='usuario_solicitante', read_only=True)
     equipo_id = serializers.PrimaryKeyRelatedField(queryset=Equipos.objects.all(), source='equipo', write_only=True)
     usuario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), source='usuario_solicitante', write_only=True, required=False)
@@ -190,6 +179,7 @@ class ActividadSerializer(serializers.ModelSerializer):
 
 # --- Serializer adaptado para endpoints de tareas ---
 class TareaSerializer(serializers.Serializer):
+    # Nota: Este serializador no tiene un campo 'equipo'
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField()
     description = serializers.CharField(required=False, allow_blank=True)
@@ -246,7 +236,7 @@ class TareaSerializer(serializers.Serializer):
         }
 
 # ==============================================================================
-# SERIALIZER DE INSUMOS (NUEVO)
+# SERIALIZER DE INSUMOS
 # ==============================================================================
 class InsumoSerializer(serializers.ModelSerializer):
     class Meta:

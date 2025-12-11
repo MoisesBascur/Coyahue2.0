@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import api from '../api'; 
-import { useTheme } from '../ThemeContext'; // Ajusta si tu ThemeContext está en otra carpeta
+import { useTheme } from '../ThemeContext'; 
 import './Sidebar.css'; 
-
-// Importación de iconos
 import { 
     HouseDoor, Speedometer2, Calendar3, People, BoxSeam, 
     PersonCircle, JournalText, ArrowLeftCircle, MoonStars, Sun,
-    Bell, BellFill, XCircle, Tools, Building
+    Bell, BellFill, XCircle, Tools         
 } from 'react-bootstrap-icons';
+
+// Función auxiliar para normalizar la respuesta de la API
+const normalize = (resp) => Array.isArray(resp.data) ? resp.data : (Array.isArray(resp.data?.results) ? resp.data.results : []);
 
 export const Sidebar = ({ user }) => {
     const navigate = useNavigate();
@@ -22,6 +23,19 @@ export const Sidebar = ({ user }) => {
     const panelRef = useRef(null); 
     const [imgError, setImgError] = useState(false);
 
+    // Función auxiliar para obtener datos de notificación
+    const getNotificationData = (notif) => {
+        const titulo = notif.titulo || notif.title || notif.nombre || 'Evento del Sistema'; 
+        const descripcion = notif.descripcion || notif.description || 'Detalle no disponible';
+        const rawDate = notif.fecha || notif.fecha_creacion || notif.due_datetime;
+        
+        const formattedDate = rawDate ? new Date(rawDate).toLocaleDateString([], {
+            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        }) : 'Sin Fecha/Hora';
+
+        return { titulo, descripcion, formattedDate };
+    }
+
     // 1. Cargar notificaciones
     useEffect(() => {
         const fetchNotificaciones = async () => {
@@ -33,8 +47,10 @@ export const Sidebar = ({ user }) => {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 
-                if (response.data && response.data.length > 0) {
-                    setNotificaciones(response.data);
+                const notificacionesArray = normalize(response); 
+
+                if (notificacionesArray.length > 0) {
+                    setNotificaciones(notificacionesArray);
                     setHayNotificacion(true);
                 } else {
                     setNotificaciones([]);
@@ -42,11 +58,13 @@ export const Sidebar = ({ user }) => {
                 }
             } catch (error) {
                 console.error("Error cargando notificaciones:", error);
+                setNotificaciones([]);
+                setHayNotificacion(false);
             }
         };
 
         fetchNotificaciones();
-        const intervalo = setInterval(fetchNotificaciones, 15000); // Revisar cada 15s
+        const intervalo = setInterval(fetchNotificaciones, 15000); 
         return () => clearInterval(intervalo);
     }, []);
 
@@ -70,14 +88,16 @@ export const Sidebar = ({ user }) => {
     const esAdmin = user?.es_admin === true;
 
     const userPhotoUrl = user?.perfil?.foto 
-        ? (user.perfil.foto.startsWith('http') ? user.perfil.foto 
-        : user.perfil.foto)
+        ? (user.perfil.foto.startsWith('http') 
+            ? user.perfil.foto 
+            : user.perfil.foto)
         : null;
 
     return (
         <div className="sidebar-container">
             <div className="sidebar-logo">
-                <Building size={35} color="#ff8c00" style={{ marginRight: '10px' }} />
+                {/* --- Aqui elimina la etiqueta y deja solo lo que queda ahora ... /> --- */}
+                
                 <div className="logo-text-container">
                     <span className="logo-grupo">Grupo</span>
                     <span className="logo-coyahue">Coyahue</span>
@@ -96,7 +116,6 @@ export const Sidebar = ({ user }) => {
                     <div className="profile-role-text">{esAdmin ? 'Administrador' : 'Equipo TI'}</div>
                 </div>
 
-                {/* Campanita */}
                 <div ref={panelRef} className="bell-position-container">
                     <button 
                         onClick={() => setMostrarPanel(!mostrarPanel)}
@@ -118,19 +137,22 @@ export const Sidebar = ({ user }) => {
                             
                             <div className="notif-body">
                                 {notificaciones.length > 0 ? (
-                                    notificaciones.map((notif) => (
-                                        <div key={notif.id} className="notif-item" style={{borderBottom:'1px solid #eee', padding:'8px'}}>
-                                            <div style={{fontWeight:'bold', fontSize:'0.9rem'}}>
-                                                {notif.titulo}
+                                    notificaciones.map((notif) => {
+                                        const { titulo, descripcion, formattedDate } = getNotificationData(notif);
+                                        return (
+                                            <div key={notif.id} className="notif-item" style={{borderBottom:'1px solid var(--sb-border)', padding:'10px'}}>
+                                                <div style={{fontWeight:'bold', fontSize:'0.9rem', color: 'var(--sb-text)'}}>
+                                                    {titulo}
+                                                </div>
+                                                <div style={{fontSize:'0.85rem', color:'var(--sb-text-sec)'}}>
+                                                    {descripcion}
+                                                </div>
+                                                <div style={{fontSize:'0.75rem', color:'var(--sb-text-sec)', opacity:'0.7', marginTop:'4px'}}>
+                                                    {formattedDate}
+                                                </div>
                                             </div>
-                                            <div style={{fontSize:'0.85rem', color:'#555'}}>
-                                                {notif.descripcion}
-                                            </div>
-                                            <div style={{fontSize:'0.75rem', color:'#999', marginTop:'4px'}}>
-                                                {new Date(notif.fecha).toLocaleDateString()} {new Date(notif.fecha).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                            </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 ) : (
                                     <div className="notif-empty">No hay notificaciones nuevas</div>
                                 )}
@@ -162,6 +184,7 @@ export const Sidebar = ({ user }) => {
                     <button onClick={toggleTheme} className="theme-toggle-btn" title="Cambiar tema">
                         {theme === 'light' ? <><MoonStars className="nav-icon" /> Modo Oscuro</> : <><Sun className="nav-icon" /> Modo Claro</>}
                     </button>
+                
                     <div className="sidebar-logout">
                         <button onClick={handleLogout} className="logout-btn">
                             <ArrowLeftCircle className="logout-icon" /> Cerrar Sesión

@@ -3,7 +3,8 @@ from .views import (
     LoginView, EquipoListView, EquipoDetailView, PerfilView, UserListView, UserDetailView,
     DashboardDataView, ReservaListView, ReservaDetailView, TipoEquipoListView, EstadoListView,
     ProveedorListView, SucursalListView, AuditoriaListView, ActividadListView, InsumoListView,
-    InsumoDetailView, TareaListView, TareaDetailView, TareaCompleteView, NotificacionListView
+    InsumoDetailView, TareaListView, TareaDetailView, TareaCompleteView, NotificacionListView,
+    EquipoBulkCreateView # <-- NUEVA VISTA IMPORTADA
 )
 
 app_name = 'api'
@@ -12,6 +13,7 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='api_login'),
     path('perfil/', PerfilView.as_view(), name='api_perfil'),
     path('equipos/', EquipoListView.as_view(), name='api_equipos'),
+    path('equipos/bulk/', EquipoBulkCreateView.as_view(), name='api_equipos_bulk_create'), # <-- NUEVA RUTA BULK
     path('equipos/<int:pk>/', EquipoDetailView.as_view(), name='api_equipo_detalle'),
     path('insumos/', InsumoListView.as_view(), name='api_insumos_list'),
     path('insumos/<int:pk>/', InsumoDetailView.as_view(), name='api_insumos_detail'),

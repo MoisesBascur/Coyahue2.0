@@ -4,6 +4,19 @@ import api from '../api';
 import { ArrowLeft, Person, Cpu, GeoAlt, FileEarmarkText } from 'react-bootstrap-icons';
 import './EquipoDetalle.css'; 
 
+// --- HELPER PARA OBTENER URL ABSOLUTA (Duplicado del Calendario) ---
+const getFileUrl = (url) => {
+    if (!url) return null;
+    // Si ya es absoluta (ej: S3), la usamos tal cual
+    if (url.startsWith('http')) return url;
+    
+    // Si es relativa (ej: /media/archivo.pdf), la devolvemos limpia.
+    // El navegador la buscará automáticamente en el dominio actual.
+    return url;
+};
+// -----------------------------------------------------------------
+
+
 export const EquipoDetalle = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -48,8 +61,9 @@ export const EquipoDetalle = () => {
         <div className="detalle-page-container detalle-scope">
             <div className="detalle-wrapper">
                 <header className="detalle-header-nav">
+                    {/* Botón de volver añadido para usabilidad cuando se ve dentro del sistema */}
                     <button className="btn-back" onClick={() => navigate('/inventario')}>
-                        <ArrowLeft style={{marginRight:8}}/> Volver al Inventario
+                        <ArrowLeft size={18}/> Volver
                     </button>
                 </header>
 
@@ -126,10 +140,10 @@ export const EquipoDetalle = () => {
                         </div>
                     </div>
 
-                    {/* FACTURA */}
+                    {/* FACTURA: USAMOS EL HELPER PARA LA URL ABSOLUTA */}
                     {equipo.factura && (
                         <div className="card-footer">
-                            <a href={equipo.factura} target="_blank" rel="noopener noreferrer" className="btn-invoice">
+                            <a href={getFileUrl(equipo.factura)} target="_blank" rel="noopener noreferrer" className="btn-invoice">
                                 <FileEarmarkText size={18}/> Ver Factura Original (PDF)
                             </a>
                         </div>

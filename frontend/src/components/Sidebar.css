@@ -77,8 +77,8 @@ body.dark-mode,
     border-bottom: 1px solid var(--sb-border);
     flex-shrink: 0;
 }
-.logo-coyahue { font-weight: bold; color: var(--sb-primary); font-size: 1.2rem; margin-left: 10px; }
-.logo-grupo { font-size: 0.8rem; color: var(--sb-text-sec); }
+.logo-coyahue { font-weight: bold; color: #ee8814; font-size: 1.5rem; margin-left: 5px; }
+.logo-grupo { font-weight: bold; color: #1224c2; font-size: 1.5rem; margin-left: 5px; }
 
 .sidebar-profile {
     padding: 20px; display: flex; align-items: center; gap: 12px;

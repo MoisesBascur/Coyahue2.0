@@ -1,6 +1,6 @@
 /* =========================================
-   ESTILOS DASHBOARD (Unificado)
-   ========================================= */
+    ESTILOS DASHBOARD (Unificado)
+    ========================================= */
 
 /* 1. VARIABLES LOCALES */
 .dashboard-isolated-scope {
@@ -121,7 +121,7 @@ body.dark-mode .dashboard-isolated-scope {
     color: var(--db-primary);
 }
 
-/* 6. GRÁFICOS */
+/* 6. GRÁFICOS (AJUSTADO PARA 2x2) */
 .dashboard-isolated-scope .section-title {
     color: var(--db-text);
     font-size: 1.4rem;
@@ -132,7 +132,8 @@ body.dark-mode .dashboard-isolated-scope {
 
 .dashboard-isolated-scope .charts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    /* CLAVE: Forzar dos columnas para el layout 2x2 */
+    grid-template-columns: 1fr 1fr; 
     gap: 25px;
 }
 
@@ -142,7 +143,8 @@ body.dark-mode .dashboard-isolated-scope {
     border-radius: 12px;
     box-shadow: var(--db-shadow);
     border: 1px solid var(--db-border);
-    height: 350px; /* Altura fija para uniformidad */
+    /* Altura ajustada para el Doughnut y la leyenda */
+    height: 380px; 
     display: flex;
     flex-direction: column;
 }
@@ -157,7 +159,16 @@ body.dark-mode .dashboard-isolated-scope {
 .dashboard-isolated-scope .chart-wrapper {
     flex: 1;
     position: relative;
+    padding-bottom: 15px;
 }
+
+/* Media Query para responsividad: cambia a 1 columna en pantallas pequeñas */
+@media (max-width: 992px) {
+    .dashboard-isolated-scope .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 
 /* Mensajes de carga */
 .dashboard-isolated-scope .dashboard-loading, 

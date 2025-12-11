@@ -8,12 +8,13 @@ import { es } from 'date-fns/locale';
 import './Menu.css';
 import './CreateTaskModal.css';
 
-// --- MODAL DE CREACIÓN DE TAREA ---
+// --- MODAL DE CREACIÓN DE TAREA (Asegura envío con 'title' y 'description') ---
 const CreateTaskModal = ({ isVisible, onClose, onCreate, currentUser }) => { 
     const [formData, setFormData] = useState({
         title: '', description: '', due_date: '', due_time: '', is_important: false,
     });
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -23,10 +24,11 @@ const CreateTaskModal = ({ isVisible, onClose, onCreate, currentUser }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setLoading(true);
         
-        // Validación de seguridad para evitar error 400
-        if (!currentUser || !currentUser.id) {
+        if (!currentUser || !currentUser.id) { 
             setError("Error: Usuario no identificado. Recarga la página.");
+            setLoading(false);
             return;
         }
         
@@ -35,6 +37,7 @@ const CreateTaskModal = ({ isVisible, onClose, onCreate, currentUser }) => {
             ? `${formData.due_date}T${formData.due_time}` : null;
             
         const dataToSend = {
+            // CORRECCIÓN FINAL para el error 400: Usamos 'title' y 'description' que pide el Serializer
             title: formData.title,
             description: formData.description,
             is_important: formData.is_important,
@@ -51,7 +54,10 @@ const CreateTaskModal = ({ isVisible, onClose, onCreate, currentUser }) => {
             onClose();
         } catch (err) {
             console.error("Error al crear tarea:", err.response?.data);
-            setError('Error al crear la tarea. Verifica la conexión.');
+            const msg = err.response?.data?.title?.[0] || 'Error desconocido al crear la tarea. Verifica tus datos.';
+            setError(msg);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -88,7 +94,9 @@ const CreateTaskModal = ({ isVisible, onClose, onCreate, currentUser }) => {
                         <input type="checkbox" id="is_important" name="is_important" onChange={handleChange} />
                         <label htmlFor="is_important">Marcar como Importante</label>
                     </div>
-                    <button type="submit" className="btn-primary">Crear Tarea</button>
+                    <button type="submit" className="btn-primary" disabled={loading}>
+                        {loading ? 'Creando...' : 'Crear Tarea'}
+                    </button>
                 </form>
             </div>
         </div>
@@ -96,7 +104,7 @@ const CreateTaskModal = ({ isVisible, onClose, onCreate, currentUser }) => {
 };
 
 // --- COMPONENTE PRINCIPAL: TABLERO ---
-export const Menu = () => {
+const Menu = () => { // Ya no es 'export const Menu'
     const { user: currentUser } = useOutletContext() || {}; 
     
     const [tasks, setTasks] = useState([]); 
@@ -116,7 +124,6 @@ export const Menu = () => {
     const pendingTasks = tasks.filter(t => t.status === 'pending' && !t.is_important);
     const importantTasks = tasks.filter(t => t.status === 'pending' && t.is_important);
     
-    // Tareas completadas: Las más recientes arriba
     const completedTasks = tasks
         .filter(t => t.status === 'completed')
         .sort((a, b) => {
@@ -124,7 +131,7 @@ export const Menu = () => {
             const fechaB = new Date(b.completed_at || 0);
             return fechaB - fechaA; 
         })
-        .slice(0, 5); // Solo las últimas 5
+        .slice(0, 5);
 
     useEffect(() => {
         const token = localStorage.getItem('authToken');
@@ -155,11 +162,16 @@ export const Menu = () => {
             const response = await api.patch(`/api/tareas/${taskId}/complete/`, {}, {
                 headers: { 'Authorization': `Token ${token}` }
             });
+            // Reemplaza la tarea completada con la respuesta actualizada
             setTasks(prev => prev.map(t => t.id === taskId ? response.data : t));
         } catch (err) { console.error(err); }
     };
 
     const renderTaskCard = (task) => {
+        // Usa la lógica robusta de búsqueda de título/descripción
+        const taskTitle = task.titulo || task.title || task.nombre || 'Sin título';
+        const taskDescription = task.descripcion || task.description || 'Sin descripción'; 
+        
         const assignedUser = users.find(u => u.id == task.assigned_user_id);
         const canComplete = (currentUser && task.assigned_user_id == currentUser.id) || (currentUser?.es_admin);
         const isOverdue = task.due_datetime && new Date(task.due_datetime) < new Date() && task.status !== 'completed';
@@ -172,8 +184,8 @@ export const Menu = () => {
                     </span>
                 </div>
                 
-                <h4 className="task-title">{task.title}</h4>
-                <p className="task-description">{task.description || 'Sin descripción'}</p>
+                <h4 className="task-title">{taskTitle}</h4>
+                <p className="task-description">{taskDescription || 'Sin descripción'}</p>
 
                 <div className="card-footer">
                     <div className="footer-meta">
@@ -196,7 +208,6 @@ export const Menu = () => {
     if (loading) return <div className="menu-loading">Cargando Tablero...</div>;
 
     return (
-        /* CLASE CLAVE: menu-isolated-scope */
         <div className="menu-page menu-isolated-scope">
             <header className="menu-header">
                 <div className="header-content">
@@ -238,7 +249,7 @@ export const Menu = () => {
                 {/* COLUMNA 3: COMPLETADAS */}
                 <div className="menu-column col-done">
                     <div className="col-header header-done">
-                        <h3>Completadas (Hoy)</h3>
+                        <h3>Completadas (Recientes)</h3>
                         <span className="badge-count">{completedTasks.length}</span>
                     </div>
                     <div className="cards-list">
@@ -255,3 +266,6 @@ export const Menu = () => {
         </div>
     );
 };
+
+// --- CORRECCIÓN CLAVE: Exportación por defecto para evitar el SyntaxError ---
+export default Menu;

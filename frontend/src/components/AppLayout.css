@@ -1,0 +1,55 @@
+/* frontend/src/components/AppLayout.css */
+
+.app-layout-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Definir el ancho del Sidebar para referencia. Ajusta esto si tu Sidebar.css usa otro valor */
+:root {
+    --sidebar-width: 250px; 
+}
+
+/* 1. Estilo por defecto cuando el sidebar está visible */
+/* Empuja el contenido hacia la derecha */
+.layout-content-push {
+    flex-grow: 1;
+    /* El margen compensa el ancho del sidebar */
+    margin-left: var(--sidebar-width); 
+    transition: margin-left 0.3s ease;
+}
+
+/* 2. Estilo cuando el sidebar está oculto (Modo QR) */
+/* El contenido ocupa todo el ancho, el margen se elimina */
+.layout-content-full {
+    flex-grow: 1;
+    margin-left: 0; 
+    transition: margin-left 0.3s ease;
+}
+
+/* Asegura que el contenido se vea correctamente */
+.layout-content-push main,
+.layout-content-full main {
+    padding: 20px; /* Padding interno de la página */
+}
+
+/* ==============================================
+   SOLUCIÓN FINAL: ANULAR FILTROS AL ABRIR MODAL
+   ============================================== */
+
+/* 🛑 CLAVE 1: Cuando el modal está abierto (clase react-modal-open en el body),
+   anular cualquier filtro/opacidad en la capa principal (wrapper). */
+body.react-modal-open .app-layout-wrapper,
+body.react-modal-open .layout-content-push,
+body.react-modal-open .layout-content-full {
+    filter: none !important;
+    -webkit-filter: none !important;
+    opacity: 1 !important;
+}
+
+/* 🛑 CLAVE 2: Asegurar que el sidebar no se desenfoque (si el sidebar está encima del wrapper) */
+body.react-modal-open .sidebar-container { 
+    filter: none !important;
+    -webkit-filter: none !important;
+    opacity: 1 !important;
+}

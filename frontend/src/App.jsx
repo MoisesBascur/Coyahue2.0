@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Login } from './pages/Login';
-import { Menu } from './pages/Menu';
+import Menu from './pages/Menu';
 import { AppLayout } from './components/AppLayout';
 import { Inventario } from './pages/Inventario';
 import { EquipoEdit } from './pages/EquipoEdit';
@@ -15,6 +15,7 @@ import { Auditoria } from './pages/Auditoria';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { EquipoDetalle } from './pages/EquipoDetalle';
 import { ThemeProvider } from './ThemeContext';
+import { BulkImportPage } from './pages/BulkImportPage'; 
 
 // IMPORTACIÓN DE COMPONENTES DE INSUMOS
 import { Insumos } from './pages/Insumos';
@@ -29,21 +30,42 @@ function App() {
                     {/* Ruta pública */}
                     <Route path="/login" element={<Login />} />
                     
-                    {/* Rutas Protegidas */}
+                    {/* ---------------------------------------------------- */}
+                    {/* 🛑 RUTA DE DETALLE (LECTURA QR): CON LAYOUT CONDICIONAL 🛑 */}
+                    {/* Envuelve el componente Detalle directamente con el AppLayout. */}
+                    {/* El AppLayout usará la URL (?layout=qr) para ocultar el Sidebar. */}
                     <Route element={<ProtectedRoute />}>
-                        <Route element={<AppLayout />}>
+                        <Route 
+                            path="/inventario/ficha/:id" 
+                            element={<AppLayout isQRLayout={true}><EquipoDetalle /></AppLayout>} 
+                        />
+                    </Route>
+                    {/* ---------------------------------------------------- */}
+
+                    {/* Rutas Protegidas (Con Sidebar por defecto) */}
+                    <Route element={<ProtectedRoute />}>
+                        {/* El AppLayout aquí funciona como contenedor y pone el Sidebar por defecto */}
+                        <Route element={<AppLayout />}> 
                             <Route path="/menu" element={<Menu />} />
                             
-                            {/* --- RUTAS DE INVENTARIO (EQUIPOS) --- */}
-                            <Route path="/inventario" element={<Inventario />} />
+                            {/* --- RUTAS DE INVENTARIO (ORDEN CORRECTO) --- */}
+                            
+                            {/* 1. BULK (Estática) */}
+                            <Route path="/inventario/bulk" element={<BulkImportPage />} /> 
+                            
+                            {/* 2. CREACIÓN (Estática) */}
                             <Route path="/inventario/nuevo" element={<EquipoCrear />} />
-                            <Route path="/inventario/ficha/:id" element={<EquipoDetalle />} />
+                            
+                            {/* 3. EDICIÓN (Dinámica: evita que /bulk sea leído como ID) */}
                             <Route path="/inventario/:id" element={<EquipoEdit />} />
                             
+                            {/* 4. INVENTARIO BASE (Debe ir AL FINAL de las rutas /inventario/*) */}
+                            <Route path="/inventario" element={<Inventario />} />
+
                             {/* --- RUTAS DE INSUMOS --- */}
                             <Route path="/insumos" element={<Insumos />} />
                             <Route path="/insumos/nuevo" element={<InsumoCrear />} />
-                            <Route path="/insumos/:id" element={<InsumoEdit />} /> {/* <--- 2. RUTA AGREGADA (El :id es la clave) */}
+                            <Route path="/insumos/:id" element={<InsumoEdit />} />
 
                             {/* --- RUTAS DE USUARIOS Y PERFIL --- */}
                             <Route path="/perfil" element={<Perfil />} />

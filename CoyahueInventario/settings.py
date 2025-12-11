@@ -165,13 +165,16 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    # --- NUEVA CONFIGURACIÓN DE PAGINACIÓN ---
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter', # <-- Asegúrate de que SearchFilter esté aquí
+    ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 15, # <-- Aquí definimos el límite de 15 por página
 }
 
 # NOTA: Estas credenciales CAMBIAN cada vez que reinicias el Lab en Academy.
-# TendrÃ¡s que venir a actualizar este archivo cada vez que trabajes.
+# Tendrás que venir a actualizar este archivo cada vez que trabajes.
 
 #AWS_ACCESS_KEY_ID = ''
 #AWS_SECRET_ACCESS_KEY = ''

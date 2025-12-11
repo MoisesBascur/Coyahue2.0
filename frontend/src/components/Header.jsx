@@ -1,20 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, BellFill, XCircle } from 'react-bootstrap-icons';
-import api from '../api';
-import './Header.css';
+import './Header.css'; // Mantenemos el CSS del Header
 
 const Header = ({ user }) => {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     
-    // Estados para notificaciones reales
-    const [notifications, setNotifications] = useState([]);
-    const [showDropdown, setShowDropdown] = useState(false);
-    const [loading, setLoading] = useState(true);
-
-    // Referencia para cerrar el menú si haces clic fuera (opcional pero recomendado)
-    const dropdownRef = useRef(null);
+    // --- Lógica de Notificaciones ELIMINADA ---
 
     const handleLogout = () => {
         localStorage.removeItem('authToken');
@@ -24,54 +16,19 @@ const Header = ({ user }) => {
     const handleSearch = (e) => {
         e.preventDefault();
         console.log("Buscando:", searchTerm);
+        // Aquí podrías redirigir a una página de búsqueda global
     };
 
-    // --- 1. CARGAR NOTIFICACIONES REALES ---
-    const fetchNotifications = async () => {
-        const token = localStorage.getItem('authToken');
-        if (!token) return;
-
-        try {
-            // Asumimos que las notificaciones viven en 'Actividades' o tienes un endpoint específico
-            const response = await api.get('/api/actividades/', {
-                headers: { 'Authorization': `Token ${token}` }
-            });
-
-            const data = Array.isArray(response.data) ? response.data : response.data.results || [];
-
-            // Filtramos solo las que son tipo 'notificacion' y ordenamos por fecha (más reciente primero)
-            const filtered = data
-                .filter(item => item.tipo === 'notificacion')
-                .sort((a, b) => new Date(b.due_datetime || b.fecha) - new Date(a.due_datetime || a.fecha));
-
-            setNotifications(filtered);
-        } catch (error) {
-            console.error("Error cargando notificaciones", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchNotifications();
-        
-        // Opcional: Recargar cada 60 segundos para ver si hay nuevas
-        const interval = setInterval(fetchNotifications, 60000);
-        return () => clearInterval(interval);
-    }, []);
-
-    // --- 2. MANEJAR CLIC EN LA CAMPANA ---
-    const handleNotificationClick = () => {
-        setShowDropdown(!showDropdown);
-    };
+    // --- Lógica de Notificaciones ELIMINADA (fetchNotifications, useEffects) ---
 
     // Foto de perfil
     const profileImage = user?.perfil?.foto_perfil 
-        ? (user.perfil.foto_perfil.startsWith('http') ? user.perfil.foto_perfil 
+    ? (user.perfil.foto_perfil.startsWith('http') 
+        ? user.perfil.foto_perfil 
         : user.perfil.foto_perfil)
-        : '/assets/default-avatar.png'; 
+    : '/assets/default-avatar.png';
 
-    const unreadCount = notifications.length; // O puedes filtrar por un campo 'leida' si lo tienes
+    // --- Variables de Notificación ELIMINADAS (unreadCount, etc.) ---
 
     return (
         <header className="main-header">
@@ -88,54 +45,9 @@ const Header = ({ user }) => {
 
             <div className="user-controls">
 
-                {/* --- SECCIÓN NOTIFICACIONES --- */}
-                <div className="notification-wrapper" ref={dropdownRef}>
-                    <button
-                        className={`notification-btn ${unreadCount > 0 ? 'has-new' : ''}`}
-                        onClick={handleNotificationClick}
-                        title="Notificaciones"
-                    >
-                        {unreadCount > 0 ? <BellFill size={20} /> : <Bell size={20} />}
-                        
-                        {unreadCount > 0 && (
-                            <span className="notification-badge">{unreadCount > 9 ? '+9' : unreadCount}</span>
-                        )}
-                    </button>
-
-                    {/* --- MENU DESPLEGABLE (DROPDOWN) --- */}
-                    {showDropdown && (
-                        <div className="notification-dropdown">
-                            <div className="dropdown-header">
-                                <h4>Notificaciones</h4>
-                                <button className="close-btn" onClick={() => setShowDropdown(false)}><XCircle /></button>
-                            </div>
-                            
-                            <div className="dropdown-body">
-                                {loading ? (
-                                    <p className="notif-empty">Cargando...</p>
-                                ) : notifications.length > 0 ? (
-                                    notifications.map((notif) => (
-                                        <div key={notif.id} className="notif-item">
-                                            <div className="notif-icon">📢</div>
-                                            <div className="notif-content">
-                                                <p className="notif-title">{notif.titulo}</p>
-                                                <p className="notif-desc">{notif.descripcion || 'Sin descripción'}</p>
-                                                <span className="notif-date">
-                                                    {notif.due_datetime 
-                                                        ? new Date(notif.due_datetime).toLocaleDateString() 
-                                                        : 'Fecha pendiente'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="notif-empty">No tienes notificaciones nuevas.</p>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </div>
-
+                {/* --- SECCIÓN NOTIFICACIONES ELIMINADA --- */}
+                {/* Ahora el Sidebar se encarga de esto. */}
+                
                 {/* Info Usuario */}
                 <div className="user-info">
                     <div className="user-details">

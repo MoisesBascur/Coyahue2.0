@@ -6,8 +6,16 @@ from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User, update_last_login
-from django.db.models import Q
+from django.db.models import Q, Count 
+from django.db.models.functions import ExtractYear 
 from django.utils import timezone
+from django.core.files.base import ContentFile
+import io
+
+from rest_framework.filters import SearchFilter 
+from django_filters.rest_framework import DjangoFilterBackend 
+from rest_framework.pagination import PageNumberPagination 
+from .filters import EquipoFilter 
 
 # Modelos unificados
 from .models import (
@@ -23,19 +31,19 @@ from .serializers import (
     InsumoSerializer, TareaSerializer, SucursalSerializer
 )
 
-# --- FUNCIÓN AUXILIAR PARA CREAR NOTIFICACIONES (NUEVO) ---
+# --- FUNCIÓN AUXILIAR PARA CREAR NOTIFICACIONES ---
 def crear_notificacion(usuario, titulo, descripcion):
     """Crea una notificación en la campanita de forma segura"""
+    usuario_a_guardar = usuario if usuario else None 
     try:
         Actividad.objects.create(
-            usuario=usuario,
+            usuario=usuario_a_guardar,
             tipo='notificacion',
             titulo=titulo,
             descripcion=descripcion,
             fecha=timezone.now(),
             due_datetime=timezone.now()
         )
-        print(f"🔔 Notificación creada para {usuario.username}: {titulo}")
     except Exception as e:
         print(f"❌ Error creando notificación: {e}")
 
@@ -44,7 +52,6 @@ class LoginView(APIView):
     permission_classes = [AllowAny] 
 
     def post(self, request, *args, **kwargs):
-        print("--- INICIANDO LOGIN ---")
         email_or_username = request.data.get('correo')
         password = request.data.get('contraseña')
         
@@ -90,14 +97,12 @@ class UserListView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         instancia = serializer.save()
-        # 1. Auditoría
         RegistroAuditoria.objects.create(
             usuario=self.request.user,
             accion="Crear Usuario",
             modelo_afectado="Usuario",
             detalle=f"ID: {instancia.id} - {instancia.username}"
         )
-        # 2. Notificación (Campanita)
         crear_notificacion(
             self.request.user, 
             "Auditoría: Usuario Creado", 
@@ -132,15 +137,52 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # --- INVENTARIO (EQUIPOS) ---
 class EquipoListView(generics.ListCreateAPIView):
-    queryset = Equipos.objects.all().order_by('id')
     serializer_class = EquipoSerializer
     permission_classes = [IsAuthenticated]
-    pagination_class = None
     
+    filter_backends = [DjangoFilterBackend] 
+    filterset_class = EquipoFilter
+    
+    pagination_class = None 
+
+    def get_queryset(self):
+        queryset = Equipos.objects.all()
+
+        # --- MANEJO ROBUSTO DE FILTRO DE TEXTO LIBRE (LUPA) ---
+        search_term = self.request.query_params.get('search', None)
+        
+        if search_term:
+            queryset = queryset.filter(
+                Q(marca__icontains=search_term) |
+                Q(modelo__icontains=search_term) |
+                Q(nro_serie__icontains=search_term) |
+                Q(rut_asociado__icontains=search_term) | 
+                Q(id_estado__nombre_estado__icontains=search_term) |
+                Q(id_tipo_equipo__nombre_tipo__icontains=search_term) |
+                Q(id_sucursal__nombre__icontains=search_term) |
+                Q(id_usuario_responsable__username__icontains=search_term) |
+                Q(id_usuario_responsable__email__icontains=search_term) 
+            )
+
+        return queryset.order_by('-id') 
+
+    # 🛑 CRÍTICO: ANULAR LA PAGINACIÓN SI SE PIDE 'all=true' (para el Calendario)
+    def get(self, request, *args, **kwargs):
+        if request.query_params.get('all') == 'true':
+            if hasattr(self, 'pagination_class'):
+                self._original_pagination_class = self.pagination_class
+            self.pagination_class = None
+        
+        response = super().get(request, *args, **kwargs)
+        
+        if hasattr(self, '_original_pagination_class'):
+            self.pagination_class = self._original_pagination_class
+        
+        return response
+
     def perform_create(self, serializer):
         instancia = serializer.save()
         
-        # 1. Auditoría
         RegistroAuditoria.objects.create(
             usuario=self.request.user,
             accion="Crear",
@@ -148,9 +190,8 @@ class EquipoListView(generics.ListCreateAPIView):
             detalle=f"ID: {instancia.id} - {instancia.marca} {instancia.modelo}"
         )
         
-        # 2. Notificación de Nuevo Equipo
         crear_notificacion(
-            self.request.user,
+            None,
             "Nuevo Equipo",
             f"Agregado: {instancia.marca} {instancia.modelo} ({instancia.nro_serie})"
         )
@@ -168,7 +209,6 @@ class EquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
             modelo_afectado="Equipo",
             detalle=f"ID: {instancia.id}"
         )
-        # Notificación de edición
         crear_notificacion(
             self.request.user,
             "Auditoría: Equipo Editado",
@@ -184,14 +224,103 @@ class EquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
             modelo_afectado="Equipo",
             detalle=detalle_log
         )
-        # Notificación de eliminación
         crear_notificacion(
             self.request.user,
             "Auditoría: Equipo Eliminado",
             f"Se eliminó: {detalle_log}"
         )
 
-# --- INSUMOS ---
+# --- VISTA PARA CARGA MASIVA DE EQUIPOS (BULK) ---
+class EquipoBulkCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        
+        cantidad_str = data.get('cantidad', '1')
+        id_proveedor = data.get('proveedor_id') 
+        factura_file = request.FILES.get('factura')
+        
+        try:
+            cantidad = int(cantidad_str)
+            if cantidad < 1:
+                raise ValueError
+        except ValueError:
+            return Response({"error": "La cantidad debe ser un número entero válido mayor a 0."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not id_proveedor:
+            return Response({"error": "El campo Proveedor es obligatorio."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            id_tipo_equipo = data.get('tipo_id')
+            id_estado = data.get('estado_id')
+            id_sucursal = data.get('sucursal_id')
+            
+            tipo_equipo_inst = TiposDeEquipo.objects.get(pk=id_tipo_equipo) if id_tipo_equipo else None
+            estado_inst = Estados.objects.get(pk=id_estado) if id_estado else None
+            proveedor_inst = Proveedores.objects.get(pk=id_proveedor)
+            sucursal_inst = Sucursal.objects.get(pk=id_sucursal) if id_sucursal else None
+            
+        except (TiposDeEquipo.DoesNotExist, Estados.DoesNotExist, Proveedores.DoesNotExist, Sucursal.DoesNotExist) as e:
+            return Response({"error": f"ID de relación inválido. Por favor, verifica el ID de Proveedor, Tipo, Estado o Sucursal."}, status=status.HTTP_400_BAD_REQUEST)
+
+        import io
+        from django.core.files.base import ContentFile
+        
+        factura_content = None
+        factura_name = None
+        if factura_file:
+            factura_content = factura_file.read() 
+            factura_file.seek(0)
+            factura_name = factura_file.name
+        
+        equipos_creados = []
+        nro_base = data.get('nro_serie', 'BULK')
+
+        for i in range(1, cantidad + 1):
+            
+            equipo = Equipos(
+                id_tipo_equipo=tipo_equipo_inst,
+                id_estado=estado_inst,
+                id_proveedor=proveedor_inst, 
+                id_sucursal=sucursal_inst,
+                
+                marca=data.get('marca', 'N/A'),
+                modelo=data.get('modelo', 'N/A'),
+                
+                nro_serie=f"{nro_base}-{i}-{timezone.now().strftime('%Y%m%d%H%M%S')}", 
+                
+                fecha_compra=data.get('fecha_compra'),
+                warranty_end_date=data.get('warranty_end_date'),
+                
+                procesador=data.get('procesador'),
+                ram=data.get('ram'),
+                almacenamiento=data.get('almacenamiento'),
+            )
+            
+            equipo.save() 
+            
+            if factura_content is not None:
+                file_to_save = ContentFile(factura_content) 
+                equipo.factura.save(factura_name, file_to_save, save=True) 
+            
+            equipos_creados.append(equipo)
+
+        RegistroAuditoria.objects.create(
+            usuario=self.request.user,
+            accion="Creación Masiva",
+            modelo_afectado="Equipos",
+            detalle=f"Creados {cantidad} equipos. Marca: {data.get('marca', 'N/A')} | Proveedor: {proveedor_inst.nombre_proveedor}"
+        )
+        crear_notificacion(
+            None,
+            "Carga Masiva Completada",
+            f"Se crearon {cantidad} equipos. Actualiza la tabla para verlos."
+        )
+
+        return Response({"message": f"Se crearon {cantidad} equipos exitosamente."}, status=status.HTTP_201_CREATED)
+
+
 class InsumoListView(generics.ListCreateAPIView):
     queryset = Insumo.objects.all().order_by('id')
     serializer_class = InsumoSerializer
@@ -199,7 +328,7 @@ class InsumoListView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         instancia = serializer.save()
-        crear_notificacion(self.request.user, "Nuevo Insumo", f"Registrado: {instancia.nombre}")
+        crear_notificacion(None, "Nuevo Insumo", f"Registrado: {instancia.nombre}") 
 
 class InsumoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Insumo.objects.all()
@@ -208,12 +337,12 @@ class InsumoDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         instancia = serializer.save()
-        crear_notificacion(self.request.user, "Insumo Actualizado", f"Editado: {instancia.nombre}")
+        crear_notificacion(None, "Insumo Actualizado", f"Editado: {instancia.nombre}") 
 
     def perform_destroy(self, instance):
         nombre = instance.nombre
         instance.delete()
-        crear_notificacion(self.request.user, "Insumo Eliminado", f"Se borró: {nombre}")
+        crear_notificacion(None, "Insumo Eliminado", f"Se borró: {nombre}") 
 
 # --- UTILIDADES ---
 class TipoEquipoListView(generics.ListAPIView):
@@ -251,9 +380,9 @@ class DashboardDataView(APIView):
         total_usuarios = User.objects.count()
         total_insumos = Insumo.objects.count()
 
-        try: 
+        try:
             estado_sin_uso_id = Estados.objects.filter(nombre_estado__icontains='Disponible').first().id
-        except AttributeError: 
+        except AttributeError:
             estado_sin_uso_id = None
         
         equipos_sin_uso = Equipos.objects.filter(id_estado=estado_sin_uso_id).count() if estado_sin_uso_id else 0
@@ -262,15 +391,53 @@ class DashboardDataView(APIView):
         for tipo in TiposDeEquipo.objects.all():
             stock_general.append({'tipo': tipo.nombre_tipo, 'cantidad': Equipos.objects.filter(id_tipo_equipo=tipo).count()})
         
+        equipos_por_proveedor = []
+        proveedores = Proveedores.objects.all()
+        
+        for prov in proveedores:
+            cantidad = Equipos.objects.filter(id_proveedor=prov).count()
+            if cantidad > 0: 
+                equipos_por_proveedor.append({
+                    'proveedor': prov.nombre_proveedor, 
+                    'cantidad': cantidad
+                })
+        
+        equipos_sin_proveedor = Equipos.objects.filter(id_proveedor__isnull=True).count()
+        if equipos_sin_proveedor > 0:
+            equipos_por_proveedor.append({
+                'proveedor': 'Sin Proveedor Asignado', 
+                'cantidad': equipos_sin_proveedor
+            })
+            
+        adquisiciones_por_anio = Equipos.objects.annotate(
+            anio=ExtractYear('fecha_compra')
+        ).filter(
+            anio__isnull=False
+        ).values('anio', 'id_proveedor__nombre_proveedor').annotate(
+            total=Count('id')
+        ).order_by('anio', 'id_proveedor__nombre_proveedor')
+        
+        grafico_adquisiciones = []
+        for item in adquisiciones_por_anio:
+            proveedor_nombre = item['id_proveedor__nombre_proveedor'] or 'Sin Proveedor Asignado'
+            
+            grafico_adquisiciones.append({
+                'anio': item['anio'],
+                'proveedor': proveedor_nombre,
+                'cantidad': item['total']
+            })
+            
         data = {
             'kpis': {
-                'total_equipos': total_equipos, 
-                'total_usuarios': total_usuarios, 
+                'total_equipos': total_equipos,
+                'total_usuarios': total_usuarios,
                 'equipos_sin_uso': equipos_sin_uso,
                 'total_insumos': total_insumos
             },
             'grafico_equipos_uso': {'en_uso': total_equipos - equipos_sin_uso, 'sin_uso': equipos_sin_uso},
-            'grafico_stock_general': stock_general
+            'grafico_stock_general': stock_general,
+            'grafico_proveedores': equipos_por_proveedor,
+            'grafico_adquisiciones': grafico_adquisiciones,
         }
         return Response(data, status=status.HTTP_200_OK)
 
@@ -285,7 +452,7 @@ class ReservaDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ReservaSerializer
     permission_classes = [IsAuthenticated]
 
-# --- ACTIVIDADES Y TAREAS (¡AQUÍ ESTÁ LA MAGIA!) ---
+# --- ACTIVIDADES Y TAREAS ---
 class ActividadListView(generics.ListCreateAPIView):
     queryset = Actividad.objects.all().order_by('-fecha')
     serializer_class = ActividadSerializer
@@ -297,17 +464,14 @@ class TareaListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     
     def perform_create(self, serializer):
-        # 1. Crear la Tarea real (Se asigna al usuario que venía en el form)
         instancia = serializer.save(tipo='tarea')
         
-        # 2. Notificación para el CREADOR (Tú)
         crear_notificacion(
             self.request.user,
             "Nueva Tarea Creada",
             f"Asignaste la tarea '{instancia.titulo}' a {instancia.usuario.username}"
         )
 
-        # 3. Notificación para el ASIGNADO (Si no eres tú mismo)
         if instancia.usuario.id != self.request.user.id:
             crear_notificacion(
                 instancia.usuario,
@@ -330,12 +494,10 @@ class TareaCompleteView(APIView):
         except Actividad.DoesNotExist:
             return Response({"detail": "Tarea no encontrada"}, status=status.HTTP_404_NOT_FOUND)
         
-        # Marcar como hecho
         tarea.etiqueta = 'hecho'
         tarea.completed_at = timezone.now()
         tarea.save()
         
-        # --- AQUÍ AGREGAMOS LA NOTIFICACIÓN AL COMPLETAR ---
         crear_notificacion(
             request.user,
             "Tarea Completada",
@@ -353,6 +515,7 @@ class NotificacionListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Actividad.objects.filter(
-            tipo='notificacion', 
-            usuario=self.request.user
+            tipo='notificacion'
+        ).filter(
+            Q(usuario=self.request.user) | Q(usuario__isnull=True)
         ).order_by('-fecha')

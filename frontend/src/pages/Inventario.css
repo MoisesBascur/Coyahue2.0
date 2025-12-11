@@ -1,6 +1,6 @@
 /* =========================================
-   ESTILOS INVENTARIO (Igual a Insumos)
-   ========================================= */
+    ESTILOS INVENTARIO (Igual a Insumos)
+    ========================================= */
 
 /* 1. VARIABLES (Scoped) */
 .inventario-isolated-scope {
@@ -117,7 +117,38 @@ body.dark-mode .inventario-isolated-scope {
     border: 1px solid var(--inv-border);
 }
 
-.inventario-isolated-scope table { width: 100%; border-collapse: collapse; }
+/* Asegura que la tabla ocupe todo el espacio y las columnas puedan ajustarse */
+.inventario-isolated-scope table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    table-layout: auto; 
+}
+
+/* --- ANCHOS DE COLUMNA ESPECÍFICOS --- */
+/* Usuario y Equipo son anchos */
+.inventario-isolated-scope th:nth-child(1), .inventario-isolated-scope td:nth-child(1) { width: 15%; }
+.inventario-isolated-scope th:nth-child(3), .inventario-isolated-scope td:nth-child(3) { width: 18%; }
+
+/* Sucursal, Tipo y Estado necesitan ancho fijo para los nombres largos */
+.inventario-isolated-scope th:nth-child(4), .inventario-isolated-scope td:nth-child(4), /* Sucursal */
+.inventario-isolated-scope th:nth-child(5), .inventario-isolated-scope td:nth-child(5) { /* Tipo */
+    width: 15%; 
+}
+
+/* COLUMNA CRÍTICA: ESTADO (6ta columna) */
+.inventario-isolated-scope th:nth-child(6), 
+.inventario-isolated-scope td:nth-child(6) {
+    width: 120px; /* Suficiente espacio para "EN MANTENCIÓN" */
+    min-width: 120px;
+}
+
+/* Las columnas de iconos (7, 8, 9) son pequeñas y centradas */
+.inventario-isolated-scope th:nth-child(n+7), 
+.inventario-isolated-scope td:nth-child(n+7) {
+    width: 50px; 
+    text-align: center;
+}
+
 
 .inventario-isolated-scope th {
     background-color: var(--inv-header-table);
@@ -135,6 +166,8 @@ body.dark-mode .inventario-isolated-scope {
     color: var(--inv-text);
     border-bottom: 1px solid var(--inv-border);
     vertical-align: middle;
+    overflow: hidden; /* Asegura que el contenido sea manejable */
+    text-overflow: ellipsis; 
 }
 
 .inventario-isolated-scope tbody tr:hover {
@@ -145,11 +178,21 @@ body.dark-mode .inventario-isolated-scope {
 .inventario-isolated-scope .text-center { text-align: center; }
 .inventario-isolated-scope .text-muted { color: var(--inv-text-sec); font-style: italic; opacity: 0.6; }
 
-/* Status Badges */
+/* Status Badges - CORREGIDO */
 .inventario-isolated-scope .status-badge {
-    padding: 4px 10px; border-radius: 6px;
-    font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+    padding: 4px 10px; 
+    border-radius: 6px;
+    font-size: 0.8rem; 
+    font-weight: 700; 
+    text-transform: uppercase;
+    
+    /* CORRECCIÓN CLAVE: Fuerza que el texto permanezca en una sola línea y expanda el badge */
+    white-space: nowrap; 
+    
+    /* Asegura que se muestre como un bloque y el padding funcione */
+    display: inline-block; 
 }
+
 .inventario-isolated-scope .status-active { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
 .inventario-isolated-scope .status-warning { background: rgba(241, 196, 15, 0.15); color: #f39c12; }
 .inventario-isolated-scope .status-danger { background: rgba(231, 76, 60, 0.15); color: #e74c3c; }

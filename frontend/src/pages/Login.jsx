@@ -1,34 +1,39 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Importamos el hook de redirección
-import api from '../api'; // 2. Importamos axios para llamar a la API
+import { useNavigate, useLocation } from 'react-router-dom'; // <--- Importamos useLocation
+import api from '../api';
 import './Login.css';
 
-// 3. Usamos la ruta desde la carpeta 'public'
-// En Vite los archivos en `public/` se sirven desde la raíz, p.ej. '/slidelogo.png'
 const logoCoyahue = '/slidelogo.png';
 
 export const Login = () => {
     const [correo, setCorreo] = useState('');
     const [contraseña, setContraseña] = useState('');
     const [error, setError] = useState('');
-    const navigate = useNavigate(); // 4. Inicializamos el hook
+    const navigate = useNavigate(); 
+    const location = useLocation(); // <--- Inicializamos useLocation
 
-    const handleLogin = async (e) => { // 5. Hacemos la función 'async'
+    // Determina a dónde debe ir el usuario después del login.
+    // Si viene de una ruta protegida (como la del QR), usa esa ruta. Si no, usa '/menu'.
+    const from = location.state?.from?.pathname || "/menu";
+    const search = location.state?.from?.search || ""; // Captura el query string (?layout=qr)
+
+    const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
 
         try {
-            // 6. ¡Llamada real a la API de Django!
-            // Asegúrate de que tu backend (Django) esté corriendo en el puerto 8000
             const response = await api.post('/api/login/', {
                 correo: correo.trim(),
                 contraseña: contraseña
             });
 
-            // 7. Si la API responde bien, guardamos el token y redirigimos
             if (response.data.token) {
-                localStorage.setItem('authToken', response.data.token); // Guardamos el token en el navegador
-                navigate('/menu'); // <-- ¡Redirección al Menú!
+                localStorage.setItem('authToken', response.data.token); 
+                
+                // --- REDIRECCIÓN CORREGIDA ---
+                // Redirige a la ruta original completa (ej: /inventario/ficha/123?layout=qr)
+                navigate(`${from}${search}`, { replace: true }); 
+                // ------------------------------
             }
 
         } catch (err) {

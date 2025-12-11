@@ -4,13 +4,13 @@ import { Download, XCircle } from 'react-bootstrap-icons';
 const QRGeneratorModal = ({ show, onClose, equipment }) => {
     if (!show || !equipment) return null;
 
-    // 1. GENERAR LA URL DEL QR
-    // Apunta a la nueva ruta de ficha de lectura "/inventario/ficha/..."
+    // 1. GENERAR LA URL DEL QR (AÑADIMOS ?layout=qr)
     const baseUrl = window.location.origin; 
-    const dataParaQR = `${baseUrl}/inventario/ficha/${equipment.id}`;
+    // Añadir el parámetro de consulta para que el Layout sepa que debe ocultar el Sidebar
+    const dataParaQR = `${baseUrl}/inventario/ficha/${equipment.id}?layout=qr`;
     
     // API para generar imagen QR
-    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(dataParaQR)}`;
+    const qrImageUrl = `https://https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(dataParaQR)}`;
 
     // 2. FUNCIÓN DE DESCARGA
     const downloadQR = async () => {

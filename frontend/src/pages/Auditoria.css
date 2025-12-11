@@ -1,6 +1,6 @@
 /* =========================================
-   ESTILOS AUDITORÍA (Diseño Unificado)
-   ========================================= */
+    ESTILOS AUDITORÍA (Diseño Unificado)
+    ========================================= */
 
 /* 1. VARIABLES LOCALES */
 .auditoria-isolated-scope {
@@ -114,6 +114,12 @@ body.dark-mode .auditoria-isolated-scope {
 .auditoria-isolated-scope .status-inactive { background: rgba(231, 76, 60, 0.15); color: #e74c3c; }
 /* Modificar (Azul/Naranja) */
 .auditoria-isolated-scope .status-warning { background: rgba(52, 152, 219, 0.15); color: #3498db; }
+
+/* 🛑 NUEVO ESTILO: Creación Masiva (Naranja primario) */
+.auditoria-isolated-scope .status-masiva { 
+    background: rgba(255, 140, 0, 0.15); 
+    color: var(--aud-primary); 
+}
 
 
 /* Paginación */
